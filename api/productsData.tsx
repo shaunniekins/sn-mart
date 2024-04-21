@@ -36,3 +36,21 @@ export const fetchViewProductsDetailsData = async (categoryName: string) => {
     return null;
   }
 };
+
+export const fetchSpecificProductDetailsData = async (id: number) => {
+  try {
+    const { data, error } = await supabase
+      .from("view_product_details")
+      .select()
+      .eq("product_id", id);
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return null;
+  }
+};

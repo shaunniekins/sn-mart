@@ -110,9 +110,13 @@ const ProductCategories = () => {
                             alt={product.product_name}
                             className="w-full h-40 object-cover mb-2"
                           />
-                          <h4 className="text-lg font-medium text-gray-800 whitespace-nowrap overflow-ellipsis overflow-hidden">
-                            {product.product_name}
-                          </h4>
+                          <Link
+                            href={`/products/${category.route}/${product.product_id}`}
+                            className="text-purple-800">
+                            <h4 className="text-lg font-medium whitespace-nowrap overflow-ellipsis overflow-hidden text-purple-800">
+                              {product.product_name}
+                            </h4>
+                          </Link>
                           <div className="flex justify-between items-center mt-2">
                             <p className="text-gray-600">₱{100.0}</p>
 

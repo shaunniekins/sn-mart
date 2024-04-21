@@ -40,9 +40,12 @@ const ProductGrid = ({ productCategory }: Props) => {
         <div className="container mx-auto p-4">
           <div className="flex items-center text-sm">
             <Link href="/" className="text-purple-800">
-              <h4>Home&nbsp;</h4>
+              <h4>Home</h4>
             </Link>
-            <h3>/ {convertedCategory}</h3>
+            <span>
+              <h3>&nbsp;/&nbsp;</h3>
+            </span>
+            <h3>{convertedCategory}</h3>
           </div>
           <h1 className="text-purple-800 text-2xl font-bold my-5">
             {convertedCategory}
@@ -57,9 +60,13 @@ const ProductGrid = ({ productCategory }: Props) => {
                   alt={product.product_name}
                   className="w-full h-40 object-cover mb-2"
                 />
-                <h4 className="text-lg font-medium text-gray-800 whitespace-nowrap overflow-ellipsis overflow-hidden">
-                  {product.product_name}
-                </h4>
+                <Link
+                  href={`/products/${productCategory}/${product.product_id}`}
+                  className="text-purple-800">
+                  <h4 className="text-lg font-medium whitespace-nowrap overflow-ellipsis overflow-hidden text-purple-800">
+                    {product.product_name}
+                  </h4>
+                </Link>
                 <div className="flex justify-between items-center mt-2">
                   <p className="text-gray-600">₱{100.0}</p>
 

@@ -1,12 +1,22 @@
+import Footer from "../landing_page/Footer";
+import HeaderComponent from "../landing_page/Header";
 import ProductDetails from "./ProductDetails";
 import RelatedProducts from "./RelatedProducts";
 
-const ProductDetailsPageComponent = () => {
+type Props = {
+  productId: string;
+  productCategory: string;
+};
+
+const ProductDetailsPageComponent = ({ productId, productCategory }: Props) => {
   return (
-    <>
-      <ProductDetails />
-      <RelatedProducts />
-    </>
+    <div className="overflow-y-auto bg-white flex flex-col min-h-[100svh]">
+      <HeaderComponent />
+      <ProductDetails productId={productId} productCategory={productCategory} />
+      {/* <RelatedProducts /> */}
+
+      <Footer />
+    </div>
   );
 };
 
