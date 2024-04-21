@@ -1,7 +1,7 @@
 import CartItems from "./CartItems";
 import OrderSummary from "./OrderSummary";
 
-const ShoppingCartPageComponent = () => {
+const CartPageComponent = () => {
   return (
     <>
       <CartItems />
@@ -10,4 +10,4 @@ const ShoppingCartPageComponent = () => {
   );
 };
 
-export default ShoppingCartPageComponent;
+export default CartPageComponent;
