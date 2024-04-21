@@ -6,16 +6,15 @@ import Link from "next/link";
 
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { faker } from "@faker-js/faker";
 import { MdOutlineShoppingCart } from "react-icons/md";
-import React, { useCallback, useEffect, useState } from "react";
-import { fetchDashboardData } from "@/app/api/brandsData";
-import { fetchViewProductsDetailsData } from "@/app/api/productsData";
-import { categories } from "@/app/data/categories";
+import React, { useEffect, useState } from "react";
+
+import { categories } from "@/data/categories";
+import { fetchViewProductsDetailsData } from "@/api/productsData";
 import {
   responsiveCategories,
   responsiveProducts,
-} from "@/app/utils/carouselFunctions";
+} from "@/utils/carouselFunctions";
 
 const ProductCategories = () => {
   const [products, setProducts] = useState<{ [key: string]: Product[] }>({});

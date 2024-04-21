@@ -1,5 +1,5 @@
-import { convertUrlFriendlyCategory } from "../utils/conversion";
-import { supabase } from "../utils/supabase";
+import { convertUrlFriendlyCategory } from "@/utils/conversion";
+import { supabase } from "@/utils/supabase";
 
 // export const fetchViewProductsData = async () => {
 //     try {

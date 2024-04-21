@@ -1,8 +1,7 @@
 "use client";
 
-import { fetchViewProductsDetailsData } from "@/app/api/productsData";
-import { responsiveProducts } from "@/app/utils/carouselFunctions";
-import { convertUrlFriendlyCategory } from "@/app/utils/conversion";
+import { fetchViewProductsDetailsData } from "@/api/productsData";
+import { convertUrlFriendlyCategory } from "@/utils/conversion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdOutlineShoppingCart } from "react-icons/md";

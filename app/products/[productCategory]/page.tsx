@@ -1,4 +1,4 @@
-import ProductsPageComponent from "@/app/components/product_listing/ProductPageComponent";
+import ProductsPageComponent from "@/components/product_listing/ProductPageComponent";
 
 type Params = {
   productCategory: string;
