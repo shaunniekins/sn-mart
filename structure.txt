@@ -1,0 +1,39 @@
+- LandingPageComponent (goods)
+    - Header
+    - HeroSection
+    - ProductCategories
+    - Footer
+
+- ProductsPageComponent
+    - ProductFilters
+    - ProductGrid
+
+- ProductPage
+    - ProductDetails
+    - RelatedProducts
+
+- CartPageComponent
+    - CartItems
+    - OrderSummary
+
+- CheckoutPageComponent
+    - CheckoutForm
+    - OrderSummary
+
+- AccountPageComponent
+    - UserProfile
+    - OrderHistory
+
+- AdminDashboardComponent
+
+> Product Types
+- Electronics
+- Clothing
+- Home & Kitchen
+- Sports & Outdoors
+- Beauty & Personal Care
+- Toys & Games
+- Books & Media
+- Automotive
+- Pet Supplies
+- Office & Stationery
