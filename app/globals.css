@@ -9,9 +9,12 @@
 }
 
 .sliderProducts {
-  margin: 0 8px;
-  overflow: "hidden";
+  @apply mx-[8px] overflow-hidden;
   /* padding: 2rem 0; */
+}
+
+.gridProducts {
+  @apply mx-1 overflow-hidden;
 }
 
 /* .slider img {
@@ -31,4 +34,10 @@
 
 .react-multi-carousel-dot.react-multi-carousel-dot--active button {
   background: rgb(128, 128, 128) !important;
+}
+
+.product-details-container {
+  @apply flex flex-col md:grid gap-4 mt-5;
+  @layer grid-cols;
+  grid-template-columns: 1.5fr 1fr;
 }

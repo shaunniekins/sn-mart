@@ -59,9 +59,7 @@ const ProductDetails = ({ productId, productCategory }: Props) => {
           {/* <h1 className="text-purple-800 text-2xl font-bold my-5">
             {product?.product_name}
           </h1> */}
-          <div
-            className="grid gap-4 mt-5"
-            style={{ gridTemplateColumns: "1.5fr 1fr" }}>
+          <div className="product-details-container">
             <div className="flex justify-center items-center">
               <Image
                 src="/images/sn-mart-logo.svg"

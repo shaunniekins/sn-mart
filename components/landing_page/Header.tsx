@@ -1,11 +1,7 @@
 // Header.tsx
 import Link from "next/link";
 import Image from "next/image";
-import {
-  MdOutlinePerson,
-  MdOutlinePerson2,
-  MdOutlineShoppingCart,
-} from "react-icons/md";
+import { MdOutlinePerson2, MdOutlineShoppingCart } from "react-icons/md";
 
 const HeaderComponent = () => {
   return (
@@ -23,7 +19,7 @@ const HeaderComponent = () => {
           {/* </div> */}
           <span className="ml-2">SN Mart</span>
         </Link>
-        <div className="flex-grow mx-4 lg:mx-64">
+        <div className="flex-grow mx-4 lg:mx-64 hidden md:block">
           <input
             type="search"
             placeholder="Search..."
@@ -36,7 +32,7 @@ const HeaderComponent = () => {
               <Link href="/profile" className="hover:text-gray-300">
                 <div className="flex gap-1 items-center">
                   <MdOutlinePerson2 className="text-xl" />
-                  Account
+                  <h6 className="hidden md:block">Account</h6>
                 </div>
               </Link>
             </li>
@@ -44,7 +40,7 @@ const HeaderComponent = () => {
               <Link href="/cart" className="hover:text-gray-300">
                 <div className="flex gap-1 items-center">
                   <MdOutlineShoppingCart className="text-xl" />
-                  Cart
+                  <h6 className="hidden md:block">Cart</h6>
                 </div>
               </Link>
             </li>

@@ -50,11 +50,11 @@ const ProductGrid = ({ productCategory }: Props) => {
           <h1 className="text-purple-800 text-2xl font-bold my-5">
             {convertedCategory}
           </h1>
-          <div className="grid grid-cols-4 md:grid-cols-5 gap-4 ">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-1 md:gap-4 ">
             {products.map((product) => (
               <div
                 key={product.product_name}
-                className="sliderProducts bg-white rounded-lg shadow-md p-4">
+                className="gridProducts bg-white rounded-lg shadow-md p-4">
                 <img
                   src={"/images/sn-mart-logo.jpeg"}
                   alt={product.product_name}
@@ -68,7 +68,7 @@ const ProductGrid = ({ productCategory }: Props) => {
                   </h4>
                 </Link>
                 <div className="flex justify-between items-center mt-2">
-                  <p className="text-gray-600">₱{100.0}</p>
+                  <p className="text-gray-600">$ {product.price}</p>
 
                   <button className="rounded-lg bg-purple-700 px-3 py-2 text-white hover:bg-purple-800">
                     <MdOutlineShoppingCart />

@@ -118,7 +118,7 @@ const ProductCategories = () => {
                             </h4>
                           </Link>
                           <div className="flex justify-between items-center mt-2">
-                            <p className="text-gray-600">₱{100.0}</p>
+                            <p className="text-gray-600">$ {product.price}</p>
 
                             <button className="rounded-lg bg-purple-700 px-3 py-2 text-white hover:bg-purple-800">
                               <MdOutlineShoppingCart />
