@@ -1,4 +1,4 @@
-import ProductsPageComponent from "@/src/components/product_listing/ProductPageComponent";
+import ProductsPageComponent from "@/components/product_listing/ProductPageComponent";
 
 type Params = {
   productCategory: string;
@@ -9,7 +9,6 @@ export default function Page({ params }: { params: Params }) {
 
   return (
     <div>
-      {/* <h1>Category: {productCategory}</h1> */}
       <ProductsPageComponent productCategory={productCategory} />
     </div>
   );

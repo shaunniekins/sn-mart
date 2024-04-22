@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+.animate-in {
+  animation: animateIn 0.3s ease 0.15s both;
+}
+
+@keyframes animateIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .slider {
   margin: 0 15px;
   overflow: "hidden";
@@ -41,3 +56,34 @@
   @layer grid-cols;
   grid-template-columns: 1.5fr 1fr;
 }
+
+.input-form {
+  @apply appearance-none relative block w-full p-3 border border-purple-700 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-700 focus:border-purple-700 focus:z-10 sm:text-sm bg-gray-50;
+}
+
+.input-button {
+  @apply relative w-full flex justify-center p-3 border border-transparent text-sm font-medium rounded-md text-white bg-purple-700 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-700;
+}
+
+/* 
+// container section
+<div className="flex flex-col gap-20 items-center">
+// area to fill with screen width
+  <div className="w-full">
+    <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
+    // the padding
+      <div className="w-full max-w-4xl flex justify-between items-center p-3 text-sm">
+        <DeployButton />
+        <AuthButton />
+      </div>
+    </nav>
+    <div className="py-6 font-bold bg-purple-950 text-center">
+      This is a protected page that you can only see as an authenticated
+      user Lorem ipsum dolor sit amet consectetur adipisicing elit.
+      Accusantium deleniti aspernatur quaerat magni enim facere, mollitia
+      natus laboriosam reiciendis alias iste sequi quam numquam corporis,
+      ducimus perspiciatis. Eaque, quas et?
+    </div>
+  </div>
+</div>
+ */

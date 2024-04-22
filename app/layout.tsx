@@ -1,20 +1,25 @@
-import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
-import { StoreProvider } from "../src/redux/StoreProvider";
+import { StoreProvider } from "@/utils/redux/StoreProvider";
 
-export const metadata: Metadata = {
+const defaultUrl = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : "http://localhost:3000";
+
+export const metadata = {
+  metadataBase: new URL(defaultUrl),
   title: "SN Mart",
-  description: "Convenience Store",
+  description: "Retail Store",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={GeistSans.className}>
+      <body className="bg-background text-foreground">
         <StoreProvider>{children}</StoreProvider>
       </body>
     </html>
