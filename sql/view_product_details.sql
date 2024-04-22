@@ -1,11 +1,13 @@
-CREATE VIEW view_product_details AS
+CREATE VIEW "ViewProductDetails" AS
 SELECT
     p.product_id,
     p.product_name,
     p.upc_code,
     p.size,
     p.price,
+    b.brand_id,
     b.brand_name,
+    pt.product_type_id AS product_type_id,
     pt.type_name AS product_type,
     COALESCE(parent.type_name, '') AS parent_product_type
 FROM

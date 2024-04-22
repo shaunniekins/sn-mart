@@ -1,6 +1,8 @@
 "use client";
 
 import { fetchSpecificProductDetailsData } from "@/api/productsData";
+import { addToCart } from "@/app/redux/features/products/cartReducer";
+import { useAppDispatch } from "@/app/redux/hooks";
 import { convertUrlFriendlyCategory } from "@/utils/conversion";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,7 +15,7 @@ type Props = {
 };
 
 const ProductDetails = ({ productId, productCategory }: Props) => {
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<Product>();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +32,9 @@ const ProductDetails = ({ productId, productCategory }: Props) => {
   }, [productId]);
 
   const convertedCategory = convertUrlFriendlyCategory(productCategory);
+
+  // redux
+  const dispatch = useAppDispatch();
 
   return (
     <section className="py-10 px-4">
@@ -76,9 +81,15 @@ const ProductDetails = ({ productId, productCategory }: Props) => {
               <h3 className="text-xl">{product?.brand_name}</h3>
               <p>${product?.price}</p>
 
-              <button className="mt-10 mb-12 rounded-full bg-purple-700 px-14 py-4 text-white hover:bg-purple-800 flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (product) {
+                    dispatch(addToCart(product));
+                  }
+                }}
+                className="mt-10 mb-12 rounded-full bg-purple-700 px-14 py-4 text-white hover:bg-purple-800 flex items-center gap-2">
                 <MdOutlineShoppingCart />
-                <p>Add to cart</p>
+                <p>Add to cart product</p>
               </button>
 
               <h4 className="text-xl mb-3">Description</h4>

@@ -1,6 +1,8 @@
 "use client";
 
 import { fetchViewProductsDetailsData } from "@/api/productsData";
+import { addToCart } from "@/app/redux/features/products/cartReducer";
+import { useAppDispatch } from "@/app/redux/hooks";
 import { convertUrlFriendlyCategory } from "@/utils/conversion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -29,6 +31,9 @@ const ProductGrid = ({ productCategory }: Props) => {
   }, [productCategory]);
 
   const convertedCategory = convertUrlFriendlyCategory(productCategory);
+
+  // redux
+  const dispatch = useAppDispatch();
 
   return (
     <section className="py-10 px-4">
@@ -68,9 +73,13 @@ const ProductGrid = ({ productCategory }: Props) => {
                   </h4>
                 </Link>
                 <div className="flex justify-between items-center mt-2">
-                  <p className="text-gray-600">$ {product.price}</p>
+                  <p className="text-gray-600">${product.price}</p>
 
-                  <button className="rounded-lg bg-purple-700 px-3 py-2 text-white hover:bg-purple-800">
+                  <button
+                    onClick={() => {
+                      dispatch(addToCart(product));
+                    }}
+                    className="rounded-lg bg-purple-700 px-3 py-2 text-white hover:bg-purple-800">
                     <MdOutlineShoppingCart />
                   </button>
                 </div>

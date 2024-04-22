@@ -21,7 +21,7 @@ const LandingPageComponent = () => {
   });
 
   return (
-    <div className="overflow-y-auto bg-white flex flex-col min-h-[100svh]">
+    <div className="obg-white flex flex-col min-h-[100svh]">
       <HeaderComponent />
       <HeroSection />
       <ProductCategories />

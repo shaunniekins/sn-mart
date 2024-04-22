@@ -7,7 +7,7 @@ import Link from "next/link";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import { MdOutlineShoppingCart } from "react-icons/md";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { categories } from "@/data/categories";
 import { fetchViewProductsDetailsData } from "@/api/productsData";
@@ -15,6 +15,13 @@ import {
   responsiveCategories,
   responsiveProducts,
 } from "@/utils/carouselFunctions";
+
+import type { RootState } from "@/app/redux/store";
+import {
+  addToCart,
+  updateQuantity,
+} from "@/app/redux/features/products/cartReducer";
+import { useAppDispatch } from "@/app/redux/hooks";
 
 const ProductCategories = () => {
   const [products, setProducts] = useState<{ [key: string]: Product[] }>({});
@@ -38,8 +45,11 @@ const ProductCategories = () => {
     fetchData();
   }, []);
 
+  // redux
+  const dispatch = useAppDispatch();
+
   return (
-    <section className="py-10 px-4">
+    <section className="py-10 px-4 z-0">
       {isLoading ? (
         <div className="container mx-auto text-center">
           <h1>Loading...</h1>
@@ -120,7 +130,11 @@ const ProductCategories = () => {
                           <div className="flex justify-between items-center mt-2">
                             <p className="text-gray-600">$ {product.price}</p>
 
-                            <button className="rounded-lg bg-purple-700 px-3 py-2 text-white hover:bg-purple-800">
+                            <button
+                              onClick={() => {
+                                dispatch(addToCart(product));
+                              }}
+                              className="rounded-lg bg-purple-700 px-3 py-2 text-white hover:bg-purple-800">
                               <MdOutlineShoppingCart />
                             </button>
                           </div>
