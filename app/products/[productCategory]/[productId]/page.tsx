@@ -1,4 +1,4 @@
-import ProductDetailsPageComponent from "@/components/product_details/ProductDetailsPageComponent";
+import ProductDetailsPageComponent from "@/src/components/product_details/ProductDetailsPageComponent";
 
 type Params = {
   productId: string;

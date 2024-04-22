@@ -1,9 +1,9 @@
 "use client";
 
-import { fetchViewProductsDetailsData } from "@/api/productsData";
-import { addToCart } from "@/app/redux/features/products/cartReducer";
-import { useAppDispatch } from "@/app/redux/hooks";
-import { convertUrlFriendlyCategory } from "@/utils/conversion";
+import { fetchViewProductsDetailsData } from "@/src/api/productsData";
+import { addToCart } from "@/src/redux/features/products/cartReducer";
+import { useAppDispatch } from "@/src/redux/hooks";
+import { convertUrlFriendlyCategory } from "@/src/utils/conversion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdOutlineShoppingCart } from "react-icons/md";

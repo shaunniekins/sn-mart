@@ -9,19 +9,19 @@ import "react-multi-carousel/lib/styles.css";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import React, { useEffect, useRef, useState } from "react";
 
-import { categories } from "@/data/categories";
-import { fetchViewProductsDetailsData } from "@/api/productsData";
+import { categories } from "@/src/data/categories";
+import { fetchViewProductsDetailsData } from "@/src/api/productsData";
 import {
   responsiveCategories,
   responsiveProducts,
-} from "@/utils/carouselFunctions";
+} from "@/src/utils/carouselFunctions";
 
-import type { RootState } from "@/app/redux/store";
+import type { RootState } from "@/src/redux/store";
 import {
   addToCart,
   updateQuantity,
-} from "@/app/redux/features/products/cartReducer";
-import { useAppDispatch } from "@/app/redux/hooks";
+} from "@/src/redux/features/products/cartReducer";
+import { useAppDispatch } from "@/src/redux/hooks";
 
 const ProductCategories = () => {
   const [products, setProducts] = useState<{ [key: string]: Product[] }>({});

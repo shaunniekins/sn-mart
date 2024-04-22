@@ -1,9 +1,9 @@
 "use client";
 
-import { fetchSpecificProductDetailsData } from "@/api/productsData";
-import { addToCart } from "@/app/redux/features/products/cartReducer";
-import { useAppDispatch } from "@/app/redux/hooks";
-import { convertUrlFriendlyCategory } from "@/utils/conversion";
+import { fetchSpecificProductDetailsData } from "@/src/api/productsData";
+import { addToCart } from "@/src/redux/features/products/cartReducer";
+import { useAppDispatch } from "@/src/redux/hooks";
+import { convertUrlFriendlyCategory } from "@/src/utils/conversion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";

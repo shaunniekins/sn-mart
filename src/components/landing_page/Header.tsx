@@ -7,12 +7,12 @@ import { MdOutlinePerson2, MdOutlineShoppingCart } from "react-icons/md";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
-import type { RootState } from "@/app/redux/store";
-import { useAppDispatch } from "@/app/redux/hooks";
+import type { RootState } from "@/src/redux/store";
+import { useAppDispatch } from "@/src/redux/hooks";
 import {
   removeFromCart,
   updateQuantity,
-} from "@/app/redux/features/products/cartReducer";
+} from "@/src/redux/features/products/cartReducer";
 
 const HeaderComponent = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
