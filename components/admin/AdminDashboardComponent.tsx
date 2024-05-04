@@ -1,4 +1,4 @@
-import Footer from "../landing_page/Footer";
+import Footer from "../Footer";
 import HeaderAdminComponent from "./HeaderAdmin";
 
 const AdminDashboardComponent = () => {

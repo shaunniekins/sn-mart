@@ -12,6 +12,8 @@ import {
   removeFromCart,
   updateQuantity,
 } from "@/utils/redux/features/products/cartReducer";
+import { getUser } from "@/utils/functions/userFetch";
+import { signOutCustomer } from "@/utils/functions/signOut";
 
 const HeaderComponent = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -39,6 +41,33 @@ const HeaderComponent = () => {
   // redux
   const dispatch = useAppDispatch();
 
+  const [user, setUser] = useState<any>(null);
+  const [firstName, setFirstName] = useState<string | null>(null);
+  const [lastName, setLastName] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getUser();
+      if (user && user?.user_metadata?.role?.includes("customer")) {
+        setUser(user);
+        setFirstName(user?.user_metadata.first_name);
+        setLastName(user?.user_metadata.last_name);
+        setIsLoggedIn(true);
+        return;
+      }
+
+      setUser(null);
+      setFirstName(null);
+      setLastName(null);
+      setIsLoggedIn(false);
+    };
+
+    fetchUser();
+  }, [isLoggedIn]);
+
+  // console.log("user", user);
+
   return (
     <header className="w-full bg-purple-700 text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
@@ -62,12 +91,28 @@ const HeaderComponent = () => {
         <nav>
           <ul className="flex space-x-4">
             <li>
-              <Link href="/profile" className="hover:text-gray-300">
-                <div className="flex gap-1 items-center">
-                  <MdOutlinePerson2 className="text-xl" />
-                  <h6 className="hidden md:block">Account</h6>
-                </div>
-              </Link>
+              {user ? (
+                <button
+                  className="hover:text-gray-300"
+                  onClick={async () => {
+                    await signOutCustomer();
+                    setIsLoggedIn(false);
+                  }}>
+                  <div className="flex gap-1 items-center">
+                    <MdOutlinePerson2 className="text-xl" />
+                    <h6 className="hidden md:block">
+                      {firstName} {lastName}
+                    </h6>
+                  </div>
+                </button>
+              ) : (
+                <Link href="/signin" className="hover:text-gray-300">
+                  <div className="flex gap-1 items-center">
+                    <MdOutlinePerson2 className="text-xl" />
+                    <h6 className="hidden md:block">Account</h6>
+                  </div>
+                </Link>
+              )}
             </li>
             <li>
               <button

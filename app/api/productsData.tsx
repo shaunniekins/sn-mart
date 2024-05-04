@@ -1,4 +1,4 @@
-import { convertUrlFriendlyCategory } from "@/utils/utils/conversion";
+import { convertUrlFriendlyCategory } from "@/utils/component_functions/conversion";
 import { createClient } from "@/utils/supabase/client";
 
 const supabase = createClient();

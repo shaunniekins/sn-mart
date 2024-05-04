@@ -1,3 +1,4 @@
+import { signOutAdmin } from "@/utils/functions/signOut";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -9,18 +10,10 @@ export default async function AuthButton() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const signOut = async () => {
-    "use server";
-
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    return redirect("/admin/signin");
-  };
-
   return user ? (
     <div className="flex items-center gap-4">
       Hey, {user.email}!
-      <form action={signOut}>
+      <form action={signOutAdmin}>
         <button className="py-2 px-4 rounded-md no-underline bg-btn-background hover:bg-btn-background-hover">
           Logout
         </button>

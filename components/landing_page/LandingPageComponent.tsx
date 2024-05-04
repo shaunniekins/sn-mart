@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import Footer from "./Footer";
+import Footer from "../Footer";
 import HeaderComponent from "./Header";
 import HeroSection from "./HeroSection";
 

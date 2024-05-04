@@ -3,7 +3,7 @@
 import { fetchSpecificProductDetailsData } from "@/app/api/productsData";
 import { addToCart } from "@/utils/redux/features/products/cartReducer";
 import { useAppDispatch } from "@/utils/redux/hooks";
-import { convertUrlFriendlyCategory } from "@/utils/utils/conversion";
+import { convertUrlFriendlyCategory } from "@/utils/component_functions/conversion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";

@@ -1,4 +1,4 @@
-import Footer from "../landing_page/Footer";
+import Footer from "../Footer";
 import HeaderComponent from "../landing_page/Header";
 import ProductDetails from "./ProductDetails";
 

@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { headers } from "next/headers";
+import { SubmitButton } from "../admin/signin/submit-button";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { SubmitButton } from "./submit-button";
-import { signOutCustomer } from "@/utils/functions/signOut";
+import { headers } from "next/headers";
 
-export default async function Login({
+export default async function CustomerSignup({
   searchParams,
 }: {
   searchParams: { message: string };
@@ -16,32 +15,39 @@ export default async function Login({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user && user?.user_metadata.role.includes("customer")) {
-    return redirect("/");
-  } else if (user) {
+  if (user) {
     return redirect("/admin/protected");
   }
 
-  const signIn = async (formData: FormData) => {
+  const signUp = async (formData: FormData) => {
     "use server";
 
+    const origin = headers().get("origin");
+    const first_name = formData.get("first_name") as string;
+    const last_name = formData.get("last_name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const supabase = createClient();
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${origin}/auth/callback`,
+        data: {
+          first_name: first_name,
+          last_name: last_name,
+          role: "customer",
+        },
+      },
     });
 
     if (error) {
-      return redirect("/signin?message=Could not authenticate user");
+      // console.error(error);
+      return redirect("/signup?message=Could not authenticate user");
     }
 
-    if (data.user?.user_metadata?.role?.includes("customer"))
-      return await signOutCustomer();
-
-    return redirect("/admin/protected");
+    return redirect("/signup?message=Check email to continue sign in process");
   };
 
   return (
@@ -66,11 +72,29 @@ export default async function Login({
       </Link>
 
       <form className="animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground">
+        <label className="text-md" htmlFor="first_name">
+          First name
+        </label>
+        <input
+          className="rounded-md px-4 py-2 bg-inherit border mb-2"
+          name="first_name"
+          placeholder="John"
+          required
+        />
+        <label className="text-md" htmlFor="name">
+          Last Name
+        </label>
+        <input
+          className="rounded-md px-4 py-2 bg-inherit border mb-2"
+          name="last_name"
+          placeholder="Doe"
+          required
+        />
         <label className="text-md" htmlFor="email">
           Email
         </label>
         <input
-          className="rounded-md px-4 py-2 bg-inherit border mb-6"
+          className="rounded-md px-4 py-2 bg-inherit border mb-2"
           name="email"
           placeholder="you@example.com"
           required
@@ -79,17 +103,17 @@ export default async function Login({
           Password
         </label>
         <input
-          className="rounded-md px-4 py-2 bg-inherit border mb-6"
+          className="rounded-md px-4 py-2 bg-inherit border mb-2"
           type="password"
           name="password"
           placeholder="••••••••"
           required
         />
         <SubmitButton
-          formAction={signIn}
-          className="bg-purple-700 rounded-md px-4 py-2 text-foreground mb-2"
-          pendingText="Signing In...">
-          Sign In
+          formAction={signUp}
+          className="border border-foreground/20 rounded-md px-4 py-2 text-foreground mb-2"
+          pendingText="Signing Up...">
+          Sign Up
         </SubmitButton>
         {searchParams?.message && (
           <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">

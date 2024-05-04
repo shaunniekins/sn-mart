@@ -12,7 +12,7 @@ import { fetchViewProductsDetailsData } from "@/app/api/productsData";
 import {
   responsiveCategories,
   responsiveProducts,
-} from "@/utils/utils/carouselFunctions";
+} from "@/utils/component_functions/carouselFunctions";
 
 import {
   addToCart,

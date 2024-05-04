@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { headers } from "next/headers";
+import { SubmitButton } from "../admin/signin/submit-button";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { SubmitButton } from "./submit-button";
-import { signOutCustomer } from "@/utils/functions/signOut";
+import { signOutAdmin } from "@/utils/functions/signOut";
 
-export default async function Login({
+export default async function CustomerSignin({
   searchParams,
 }: {
   searchParams: { message: string };
@@ -16,9 +15,7 @@ export default async function Login({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user && user?.user_metadata.role.includes("customer")) {
-    return redirect("/");
-  } else if (user) {
+  if (user) {
     return redirect("/admin/protected");
   }
 
@@ -38,10 +35,10 @@ export default async function Login({
       return redirect("/signin?message=Could not authenticate user");
     }
 
-    if (data.user?.user_metadata?.role?.includes("customer"))
-      return await signOutCustomer();
+    if (!data.user?.user_metadata?.role?.includes("customer"))
+      return await signOutAdmin();
 
-    return redirect("/admin/protected");
+    return redirect("/");
   };
 
   return (
@@ -91,6 +88,12 @@ export default async function Login({
           pendingText="Signing In...">
           Sign In
         </SubmitButton>
+        {/* <SubmitButton
+            formAction={signUp}
+            className="border border-foreground/20 rounded-md px-4 py-2 text-foreground mb-2"
+            pendingText="Signing Up...">
+            Sign Up
+          </SubmitButton> */}
         {searchParams?.message && (
           <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
             {searchParams.message}

@@ -13,5 +13,9 @@ export default async function ProtectedPage() {
     return redirect("/admin/signin");
   }
 
+  if (user && user?.user_metadata?.role?.includes("customer")) {
+    return redirect("/");
+  }
+
   return <AdminDashboardComponent />;
 }
