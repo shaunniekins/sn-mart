@@ -2,12 +2,12 @@ import { createClient } from "@/utils/supabase/client";
 
 const supabase = createClient();
 
-export const fetchBrandsData = async () => {
+export const fetchProductTypesData = async () => {
   try {
     const { data, error } = await supabase
-      .from("Brands")
+      .from("Product_Types")
       .select()
-      .order("brand_name");
+      .order("product_type_name");
 
     if (error) {
       throw error;

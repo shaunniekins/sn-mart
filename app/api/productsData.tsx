@@ -9,7 +9,7 @@ export const fetchViewProductsDetailsData = async (categoryName: string) => {
     const { data, error } = await supabase
       .from("ViewProductDetails")
       .select()
-      .eq("product_type", convertedCategoryName);
+      .eq("product_type_name", convertedCategoryName);
 
     if (error) {
       throw error;
@@ -37,5 +37,84 @@ export const fetchSpecificProductDetailsData = async (id: number) => {
   } catch (error) {
     console.error("Error fetching data:", error);
     return null;
+  }
+};
+
+// admin
+export const fetchAllProductsData = async (
+  searchValue: string,
+  entriesPerPage: number,
+  currentPage: number
+) => {
+  const offset = (currentPage - 1) * entriesPerPage;
+
+  let query = supabase
+    .from("ViewProductDetails")
+    .select(`*`, { count: "exact" })
+    .order("product_name", { ascending: false });
+
+  if (searchValue) {
+    const searchFields = [
+      "product_name",
+      "upc_code",
+      "brand_name",
+      "product_type_name",
+    ];
+    const searchQuery = searchFields
+      .map((field) => `${field}.ilike.%${searchValue}%`)
+      .join(",");
+    query = query.or(searchQuery);
+  }
+
+  try {
+    const response = await query.range(offset, offset + entriesPerPage - 1);
+
+    if (response.error) {
+      throw response.error;
+    }
+    return response;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
+};
+
+export const deleteProductData = async (productId: number) => {
+  try {
+    const response = await supabase
+      .from("Products")
+      .delete()
+      .match({ product_id: productId });
+
+    if (response.error) {
+      throw response.error;
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    throw error;
+  }
+};
+
+export const insertProductData = async (newProduct: {
+  product_name: string;
+  upc_code: string;
+  size: string;
+  price: number;
+  brand_id: number | null;
+  product_type_id: number | null;
+}) => {
+  try {
+    const response = await supabase.from("Products").insert([newProduct]);
+
+    if (response.error) {
+      throw response.error;
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Error adding product:", error);
+    throw error;
   }
 };

@@ -28,8 +28,7 @@ CREATE TABLE "Vendors" (
 -- Product Types Table
 CREATE TABLE "Product_Types" (
     product_type_id SERIAL PRIMARY KEY,
-    type_name VARCHAR(255) NOT NULL,
-    parent_type_id INTEGER REFERENCES "Product_Types"(product_type_id)
+    product_type_name VARCHAR(255) NOT NULL
 );
 
 -- Products Table

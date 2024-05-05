@@ -8,7 +8,7 @@ This document outlines a possible implementation of the database for SN Mart usi
   Each product has a unique ID (auto-increment), name, UPC code, size, and references to brand and product type.
 - **Brands** (brand_id [PK], brand_name)
   Each brand has a unique ID and name.
-- **Product_Types** (product_type_id [PK], type_name, parent_type_id [FK])
+- **Product_Types** (product_type_id [PK], product_type_name, parent_type_id [FK])
   Hierarchical structure with unique ID, type name, and optional reference to a parent type for subcategories.
 - **Vendors** (vendor_id [PK], vendor_name)
   Unique ID and name for each vendor.
@@ -60,7 +60,7 @@ brand_name VARCHAR(255) UNIQUE NOT NULL
 -- Product Types Table
 CREATE TABLE Product_Types (
 product_type_id SERIAL PRIMARY KEY,
-type_name VARCHAR(255) NOT NULL,
+product_type_name VARCHAR(255) NOT NULL,
 parent_type_id INTEGER REFERENCES Product_Types(product_type_id)
 );
 ```

@@ -16,7 +16,7 @@ export default async function Login({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user && user?.user_metadata.role.includes("customer")) {
+  if (user && user?.user_metadata?.role?.includes("customer")) {
     return redirect("/");
   } else if (user) {
     return redirect("/admin/protected");

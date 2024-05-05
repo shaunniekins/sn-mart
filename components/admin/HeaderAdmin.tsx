@@ -22,31 +22,6 @@ const HeaderAdminComponent = () => {
 
         <div className="flex flex-col justify-end items-end">
           <AuthButton />
-
-          <nav>
-            <ul className="flex space-x-10">
-              <li>
-                <Link href="/profile" className="hover:text-gray-300">
-                  <h6 className="">Profile</h6>
-                </Link>
-              </li>
-              <li>
-                <Link href="/inventory" className="hover:text-gray-300">
-                  <h6 className="">Inventory</h6>
-                </Link>
-              </li>
-              <li>
-                <Link href="/purchases" className="hover:text-gray-300">
-                  <h6 className="">Purchases History</h6>
-                </Link>
-              </li>
-              <li>
-                <Link href="/cashier" className="hover:text-gray-300">
-                  <h6 className="">Cashier Record</h6>
-                </Link>
-              </li>
-            </ul>
-          </nav>
         </div>
       </div>
     </header>

@@ -87,3 +87,75 @@
   </div>
 </div>
  */
+
+/* admin */
+.link-management-buttons {
+  @apply bg-purple-500 hover:bg-purple-600 text-white font-bold p-4 rounded-lg;
+}
+
+.section-link-container {
+  @apply flex items-center text-sm;
+}
+
+.section-link {
+  @apply text-purple-800;
+}
+
+.section-title {
+  @apply text-purple-800 text-2xl font-bold my-5 mb-10;
+}
+
+.table-head-row {
+  @apply px-4 py-2;
+}
+
+.table-body-row {
+  @apply border px-4 py-2;
+}
+
+.navigate-buttons {
+  @apply bg-purple-500 hover:bg-purple-600 text-white font-bold px-2 py-1 text-2xl rounded-lg;
+}
+
+/* Remove Arrows/Spinners */
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* combobox */
+.combobox-container {
+  @apply w-full px-2 mb-2;
+}
+
+.combobox-label {
+  @apply block font-semibold mb-1;
+}
+
+.combobox-input-group {
+  @apply flex items-center border border-gray-300 rounded bg-white;
+}
+
+.combobox-input {
+  @apply w-full px-3 py-2;
+}
+
+.combobox-button {
+  @apply py-2 text-gray-500 rounded-r text-2xl;
+}
+
+.combobox-popover {
+  @apply mt-1 border border-gray-300 rounded bg-white max-h-24 overflow-auto;
+}
+
+.combobox-list-item {
+  @apply px-3 py-2 hover:bg-gray-200;
+}

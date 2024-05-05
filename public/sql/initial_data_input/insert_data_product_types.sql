@@ -1,6 +1,6 @@
 -- Insert top-level categories
 INSERT INTO
-    "Product_Types" (type_name)
+    "Product_Types" (product_type_name)
 VALUES
     ('Electronics'),
     ('Clothing'),

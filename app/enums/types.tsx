@@ -6,6 +6,6 @@ type Product = {
   brand_id: number;
   brand_name: string;
   product_type_id: number;
-  product_type: string; // name
+  product_type_name: string;
   price: number;
 };
