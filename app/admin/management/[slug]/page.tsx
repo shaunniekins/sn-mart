@@ -7,6 +7,7 @@ import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import ManageBrands from "@/components/admin/LinkComponents/ManageBrands";
 import ManageProductCategories from "@/components/admin/LinkComponents/ManageProductCategories";
+import ManageUsers from "@/components/admin/ManageUsers";
 
 export default async function ManagementPage({
   params,
@@ -38,6 +39,9 @@ export default async function ManagementPage({
       break;
     case "category":
       activeComponent = <ManageProductCategories />;
+      break;
+    case "users":
+      activeComponent = <ManageUsers />;
       break;
     default:
       activeComponent = (

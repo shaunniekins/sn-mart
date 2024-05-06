@@ -162,13 +162,7 @@ const ManageProductCatalog = () => {
 
       fetchProducts();
 
-      setInputProductName("");
-      setInputUpcCode("");
-      setInputSize("");
-      setInputPrice("");
-      setSelectedBrandId(null);
-      setSelectedProductTypeId(null);
-      setEditingProduct(null);
+      handleRemoveInputValues();
       onClose();
     } catch (error) {
       console.error("An error occurred:", error);

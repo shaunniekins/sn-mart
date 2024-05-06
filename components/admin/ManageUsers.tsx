@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
-
 import {
   Breadcrumbs,
   BreadcrumbItem,
@@ -23,24 +21,32 @@ import {
   useDisclosure,
   Pagination,
   Spinner,
+  Select,
+  SelectItem,
 } from "@nextui-org/react";
 import { SearchIcon } from "@/components/SearchIcon";
-
-import {
-  deleteBrandData,
-  editBrandData,
-  fetchAllBrandsData,
-  insertBrandData,
-} from "@/app/api/brandsData";
 import Link from "next/link";
+import {
+  deleteUser,
+  editUser,
+  fetchAllUsersData,
+  insertNewUser,
+  rolesData,
+} from "@/app/api/usersData";
+import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
 
-type Brand = {
-  brand_id: number;
-  brand_name: string;
+type User = {
+  id: string;
+  email: string;
+  created_at: string;
+  role: string;
+  last_name: string | null;
+  first_name: string | null;
 };
-
-const ManageBrands = () => {
-  const [brands, setBrands] = useState<Brand[]>([]);
+const ManageUsers = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<string[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   // fetching
   const [searchValue, setSearchValue] = useState("");
@@ -52,19 +58,20 @@ const ManageBrands = () => {
   >("idle");
   const totalPages = Math.ceil(numOfEntries / entriesPerPage);
 
-  const fetchBrands = async () => {
+  const fetchUsers = async () => {
     try {
       setLoadingState("loading");
-      const response = await fetchAllBrandsData(
+      const response = await fetchAllUsersData(
         searchValue,
         entriesPerPage,
-        currentPage
+        currentPage,
+        selectedRoles
       );
       if (response?.error) {
         console.error(response.error);
         setLoadingState("error");
       } else {
-        setBrands(response.data as Brand[]);
+        setUsers(response.data as User[]);
         setNumOfEntries(response.count || 1);
         setLoadingState("idle");
       }
@@ -75,30 +82,56 @@ const ManageBrands = () => {
   };
 
   useEffect(() => {
-    fetchBrands();
-  }, [searchValue, entriesPerPage, currentPage]);
+    fetchUsers();
+  }, [searchValue, entriesPerPage, currentPage, selectedRoles]);
+
+  const fetchRoles = async () => {
+    try {
+      const response = await rolesData();
+      if (response === null) {
+        console.error("An error occurred while fetching brands data");
+      } else {
+        setRoles(response.map((role: { role: string }) => role.role));
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRoles();
+  }, []);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [inputBrandName, setInputBrandName] = useState("");
+  const [inputUserEmail, setInputUserEmail] = useState("");
+  const [inputUserFirstName, setInputUserFirstName] = useState("");
+  const [inputUserLastName, setInputUserLastName] = useState("");
+  const [inputUserRole, setInputUserRole] = useState("");
 
-  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const handleAddOrEditBrand = async () => {
+  const handleAddOrEditUser = async () => {
+    const userData = {
+      email: inputUserEmail,
+      first_name: inputUserFirstName,
+      last_name: inputUserLastName,
+      role: inputUserRole,
+    };
+
     try {
-      if (editingBrand) {
-        await editBrandData(editingBrand.brand_id, inputBrandName);
+      if (editingUser) {
+        await editUser(editingUser.id, userData);
       } else {
-        await insertBrandData(inputBrandName);
+        await insertNewUser(userData);
       }
 
-      fetchBrands();
+      fetchUsers();
 
-      setInputBrandName("");
-      setEditingBrand(null);
+      handleRemoveInputValues();
       onClose();
     } catch (error) {
-      console.error("An error occurred:", error);
+      console.error("An error occurred1111:", error);
     }
   };
 
@@ -109,12 +142,19 @@ const ManageBrands = () => {
   }, [isOpen]);
 
   const handleRemoveInputValues = () => {
-    setInputBrandName("");
-    setEditingBrand(null);
+    setInputUserEmail("");
+    setInputUserFirstName("");
+    setInputUserLastName("");
+    setInputUserRole("");
+    setEditingUser(null);
   };
 
   const columns = [
-    { key: "brand_name", label: "Brand Name" },
+    { key: "first_name", label: "First Name" },
+    { key: "last_name", label: "Last Name" },
+    { key: "email", label: "Email" },
+    { key: "role", label: "Role" },
+    // {key: "created_at", label: "Created At"},
     { key: "actions", label: "Actions" },
   ];
 
@@ -127,22 +167,67 @@ const ManageBrands = () => {
         isDismissable={false}>
         <ModalContent>
           <ModalHeader className="text-xl font-bold text-main-theme">
-            {editingBrand ? "Edit Brand" : "Add Brand"}
+            {editingUser ? "Edit User" : "Add New User"}
           </ModalHeader>
           <ModalBody>
-            <div className="grid w-full gap-3">
+            <div className="grid grid-cols-2 w-full gap-3">
               <div className="form-container">
-                <label htmlFor="brand_name" className="form-label">
-                  Brand Name
+                <label htmlFor="email" className="form-label">
+                  Email
+                </label>
+                <Input
+                  type="email"
+                  id="email"
+                  name="email"
+                  isRequired
+                  placeholder="example@gmail.com"
+                  value={inputUserEmail}
+                  onChange={(e) => setInputUserEmail(e.target.value)}
+                />
+              </div>
+              <div className="form-container">
+                <label htmlFor="first_name" className="form-label">
+                  First Name
                 </label>
                 <Input
                   type="text"
-                  id="brand_name"
-                  name="brand_name"
-                  placeholder="Brand Name"
-                  value={inputBrandName}
-                  onChange={(e) => setInputBrandName(e.target.value)}
+                  id="first_name"
+                  name="first_name"
+                  placeholder="First name"
+                  value={inputUserFirstName}
+                  onChange={(e) => setInputUserFirstName(e.target.value)}
                 />
+              </div>
+              <div className="form-container">
+                <label htmlFor="last_name" className="form-label">
+                  Last Name
+                </label>
+                <Input
+                  type="text"
+                  id="last_name"
+                  name="last_name"
+                  placeholder="Last name"
+                  value={inputUserLastName}
+                  onChange={(e) => setInputUserLastName(e.target.value)}
+                />
+              </div>
+              <div className="form-container">
+                <label htmlFor="role" className="form-label">
+                  Role
+                </label>
+                <Select
+                  aria-label="Select Role"
+                  id="role"
+                  name="role"
+                  placeholder="Select Role"
+                  value={inputUserRole}
+                  onChange={(e) => setInputUserRole(e.target.value)}>
+                  {roles.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {role.charAt(0).toUpperCase() + role.slice(1)}
+                    </SelectItem>
+                  ))}
+                </Select>
               </div>
             </div>
           </ModalBody>
@@ -152,29 +237,38 @@ const ManageBrands = () => {
             </Button>
             <Button
               color="primary"
-              onPress={handleAddOrEditBrand}
-              disabled={!inputBrandName}
+              onPress={handleAddOrEditUser}
+              disabled={
+                !inputUserEmail ||
+                !inputUserFirstName ||
+                !inputUserLastName ||
+                !inputUserRole
+              }
               className={`bg-main-theme text-white ${
-                !inputBrandName
+                !inputUserEmail ||
+                !inputUserFirstName ||
+                !inputUserLastName ||
+                !inputUserRole
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-main-hover-theme"
               }`}>
-              {editingBrand ? "Edit Brand" : "Add Brand"}
+              {editingUser ? "Update User" : "Add User"}
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
+
       <Breadcrumbs>
         <BreadcrumbItem className="section-link">
           <Link href="/admin/protected">Dashboard</Link>
         </BreadcrumbItem>
-        <BreadcrumbItem>Manage Brands</BreadcrumbItem>
+        <BreadcrumbItem>Manage Users</BreadcrumbItem>
       </Breadcrumbs>
-      <h1 className="section-title">Manage Brands</h1>
 
+      <h1 className="section-title">Manage Users</h1>
       <div className="flex flex-col gap-5">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-bold mb-2">Existing Brands</h3>
+          <h3 className="text-lg font-bold mb-2">Existing Users</h3>
           <div className="flex items-center gap-2">
             <Button
               radius="md"
@@ -216,10 +310,26 @@ const ManageBrands = () => {
                 <SearchIcon className="text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0" />
               }
             />
+            <Select
+              aria-label="Filter by role"
+              placeholder="Filter by role"
+              selectionMode="multiple"
+              className="max-w-[10rem]"
+              value={selectedRoles}
+              onChange={(event) => {
+                const roles = event.target.value.split(",");
+                setSelectedRoles(roles);
+              }}>
+              {roles.map((role) => (
+                <SelectItem key={role} value={role}>
+                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                </SelectItem>
+              ))}
+            </Select>
           </div>
         </div>
         <Table
-          aria-label="Brand Table"
+          aria-label="Product Catalog Table"
           bottomContent={
             totalPages > 0 ? (
               <div className="flex w-full justify-center">
@@ -246,42 +356,45 @@ const ManageBrands = () => {
             )}
           </TableHeader>
           <TableBody
-            items={brands}
+            items={users}
             emptyContent={"No rows to display."}
             loadingContent={<Spinner color="secondary" />}
             loadingState={loadingState}>
-            {(brand) => (
-              <TableRow key={brand.brand_id} className="text-center">
+            {(user) => (
+              <TableRow key={user.id} className="text-center">
                 {(columnKey) => {
                   if (columnKey === "actions") {
                     return (
                       <TableCell className="flex gap-2 justify-center">
-                        <Button
+                        {/* <Button
                           isIconOnly
                           radius="sm"
                           onClick={() => {
-                            setInputBrandName(brand.brand_name);
-                            setEditingBrand(brand);
+                            setInputUserEmail(user.email);
+                            setInputUserFirstName(user.first_name || "");
+                            setInputUserLastName(user.last_name || "");
+                            setInputUserRole(user.role);
+                            setEditingUser(user);
                           }}
                           onPress={onOpen}
                           className="bg-edit-theme hover:bg-edit-hover-theme text-white">
                           <MdOutlineEdit />
-                        </Button>
+                        </Button> */}
                         <Button
                           isIconOnly
                           radius="sm"
                           onClick={() => {
                             if (
                               window.confirm(
-                                "Are you sure you want to delete this brand?"
+                                "Are you sure you want to delete this user?"
                               )
                             ) {
-                              deleteBrandData(brand.brand_id)
+                              deleteUser(user.id)
                                 .then(() => {
-                                  fetchBrands();
+                                  fetchUsers();
                                 })
                                 .catch((error) => {
-                                  console.error("An error occurred:", error);
+                                  console.error("Error deleting user:", error);
                                 });
                             }
                           }}
@@ -291,9 +404,16 @@ const ManageBrands = () => {
                       </TableCell>
                     );
                   }
+                  if (columnKey === "role") {
+                    return (
+                      <TableCell>
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      </TableCell>
+                    );
+                  }
                   return (
                     <TableCell>
-                      {brand[columnKey as keyof typeof brand]}
+                      {user[columnKey as keyof typeof user]}
                     </TableCell>
                   );
                 }}
@@ -306,4 +426,4 @@ const ManageBrands = () => {
   );
 };
 
-export default ManageBrands;
+export default ManageUsers;
