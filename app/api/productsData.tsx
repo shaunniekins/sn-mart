@@ -35,7 +35,7 @@ export const fetchSpecificProductDetailsData = async (id: number) => {
 
     return data;
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error("Error fetching product:", error);
     return null;
   }
 };
@@ -51,7 +51,7 @@ export const fetchAllProductsData = async (
   let query = supabase
     .from("ViewProductDetails")
     .select(`*`, { count: "exact" })
-    .order("product_name", { ascending: false });
+    .order("product_name");
 
   if (searchValue) {
     const searchFields = [
@@ -74,7 +74,7 @@ export const fetchAllProductsData = async (
     }
     return response;
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error("Error fetching product:", error);
     throw error;
   }
 };

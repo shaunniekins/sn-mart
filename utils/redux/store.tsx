@@ -18,6 +18,10 @@ export const makeStore = configureStore({
   reducer: {
     cart: persistedReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
 export type RootState = ReturnType<typeof makeStore.getState>;

@@ -90,12 +90,8 @@
   @apply border px-4 py-2;
 }
 
-.navigate-buttons {
-  @apply bg-main-theme hover:bg-main-hover-theme text-white font-bold text-2xl;
-}
-
 .form-container {
-  @apply w-full px-2 mb-2;
+  @apply w-full px-2;
 }
 
 .form-label {
