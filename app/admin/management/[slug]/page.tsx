@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import ManageBrands from "@/components/admin/LinkComponents/ManageBrands";
+import ManageProductCategories from "@/components/admin/LinkComponents/ManageProductCategories";
 
 export default async function ManagementPage({
   params,
@@ -34,6 +35,9 @@ export default async function ManagementPage({
       break;
     case "brand":
       activeComponent = <ManageBrands />;
+      break;
+    case "category":
+      activeComponent = <ManageProductCategories />;
       break;
     default:
       activeComponent = (

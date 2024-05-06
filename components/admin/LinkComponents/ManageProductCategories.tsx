@@ -26,22 +26,21 @@ import {
 } from "@nextui-org/react";
 import { SearchIcon } from "@/components/SearchIcon";
 
-import {
-  deleteBrandData,
-  editBrandData,
-  fetchAllBrandsData,
-  fetchBrandsData,
-  insertBrandData,
-} from "@/app/api/brandsData";
 import Link from "next/link";
+import {
+  deleteProductTypeData,
+  editProductTypeData,
+  fetchAllProductTypesData,
+  insertProductTypeData,
+} from "@/app/api/productTypesData";
 
-type Brand = {
-  brand_id: number;
-  brand_name: string;
+type ProductType = {
+  product_type_id: number;
+  product_type_name: string;
 };
 
-const ManageBrands = () => {
-  const [brands, setBrands] = useState<Brand[]>([]);
+const ManageProductCategories = () => {
+  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
 
   // fetching
   const [searchValue, setSearchValue] = useState("");
@@ -53,10 +52,10 @@ const ManageBrands = () => {
   >("idle");
   const totalPages = Math.ceil(numOfEntries / entriesPerPage);
 
-  const fetchBrands = async () => {
+  const fetchProductCategories = async () => {
     try {
       setLoadingState("loading");
-      const response = await fetchAllBrandsData(
+      const response = await fetchAllProductTypesData(
         searchValue,
         entriesPerPage,
         currentPage
@@ -65,7 +64,7 @@ const ManageBrands = () => {
         console.error(response.error);
         setLoadingState("error");
       } else {
-        setBrands(response.data as Brand[]);
+        setProductTypes(response.data as ProductType[]);
         setNumOfEntries(response.count || 1);
         setLoadingState("idle");
       }
@@ -76,27 +75,31 @@ const ManageBrands = () => {
   };
 
   useEffect(() => {
-    fetchBrands();
+    fetchProductCategories();
   }, [searchValue, entriesPerPage, currentPage]);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [inputBrandName, setInputBrandName] = useState("");
+  const [inputProductTypeName, setInputProductTypeName] = useState("");
 
-  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
+  const [editingProductType, setEditingProductType] =
+    useState<ProductType | null>(null);
 
-  const handleAddOrEditBrand = async () => {
+  const handleAddOrEditProductType = async () => {
     try {
-      if (editingBrand) {
-        await editBrandData(editingBrand.brand_id, inputBrandName);
+      if (editingProductType) {
+        await editProductTypeData(
+          editingProductType.product_type_id,
+          inputProductTypeName
+        );
       } else {
-        await insertBrandData(inputBrandName);
+        await insertProductTypeData(inputProductTypeName);
       }
 
-      fetchBrands();
+      fetchProductCategories();
 
-      setInputBrandName("");
-      setEditingBrand(null);
+      setInputProductTypeName("");
+      setEditingProductType(null);
       onClose();
     } catch (error) {
       console.error("An error occurred:", error);
@@ -110,12 +113,12 @@ const ManageBrands = () => {
   }, [isOpen]);
 
   const handleRemoveInputValues = () => {
-    setInputBrandName("");
-    setEditingBrand(null);
+    setInputProductTypeName("");
+    setEditingProductType(null);
   };
 
   const columns = [
-    { key: "brand_name", label: "Brand Name" },
+    { key: "product_type_name", label: "Product Type Name" },
     { key: "actions", label: "Actions" },
   ];
 
@@ -128,21 +131,21 @@ const ManageBrands = () => {
         isDismissable={false}>
         <ModalContent>
           <ModalHeader className="text-xl font-bold text-main-theme">
-            {editingBrand ? "Edit Brand" : "Add Brand"}
+            {editingProductType ? "Edit Product Type" : "Add Product Type"}
           </ModalHeader>
           <ModalBody>
             <div className="grid w-full gap-3">
               <div className="form-container">
-                <label htmlFor="brand_name" className="form-label">
-                  Brand Name
+                <label htmlFor="product_type_name" className="form-label">
+                  Product Type Name
                 </label>
                 <Input
                   type="text"
-                  id="brand_name"
-                  name="brand_name"
-                  placeholder="Brand Name"
-                  value={inputBrandName}
-                  onChange={(e) => setInputBrandName(e.target.value)}
+                  id="product_type_name"
+                  name="product_type_name"
+                  placeholder="Product Type Name"
+                  value={inputProductTypeName}
+                  onChange={(e) => setInputProductTypeName(e.target.value)}
                 />
               </div>
             </div>
@@ -153,14 +156,14 @@ const ManageBrands = () => {
             </Button>
             <Button
               color="primary"
-              onPress={handleAddOrEditBrand}
-              disabled={!inputBrandName}
+              onPress={handleAddOrEditProductType}
+              disabled={!inputProductTypeName}
               className={`bg-main-theme text-white ${
-                !inputBrandName
+                !inputProductTypeName
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-main-hover-theme"
               }`}>
-              {editingBrand ? "Edit Brand" : "Add Brand"}
+              {editingProductType ? "Edit Product Type" : "Add Product Type"}
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -169,13 +172,13 @@ const ManageBrands = () => {
         <BreadcrumbItem className="section-link">
           <Link href="/admin/protected">Dashboard</Link>
         </BreadcrumbItem>
-        <BreadcrumbItem>Manage Brands</BreadcrumbItem>
+        <BreadcrumbItem>Manage Product Types</BreadcrumbItem>
       </Breadcrumbs>
-      <h1 className="section-title">Manage Brands</h1>
+      <h1 className="section-title">Manage Product Types</h1>
 
       <div className="flex flex-col gap-5">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-bold mb-2">Existing Brands</h3>
+          <h3 className="text-lg font-bold mb-2">Existing Product Types</h3>
           <div className="flex items-center gap-2">
             <Button
               radius="md"
@@ -220,7 +223,7 @@ const ManageBrands = () => {
           </div>
         </div>
         <Table
-          aria-label="Brand Table"
+          aria-label="Product Type Table"
           bottomContent={
             totalPages > 0 ? (
               <div className="flex w-full justify-center">
@@ -247,12 +250,14 @@ const ManageBrands = () => {
             )}
           </TableHeader>
           <TableBody
-            items={brands}
+            items={productTypes}
             emptyContent={"No rows to display."}
             loadingContent={<Spinner color="secondary" />}
             loadingState={loadingState}>
-            {(brand) => (
-              <TableRow key={brand.brand_id} className="text-center">
+            {(productType) => (
+              <TableRow
+                key={productType.product_type_id}
+                className="text-center">
                 {(columnKey) => {
                   if (columnKey === "actions") {
                     return (
@@ -261,8 +266,10 @@ const ManageBrands = () => {
                           isIconOnly
                           radius="sm"
                           onClick={() => {
-                            setInputBrandName(brand.brand_name);
-                            setEditingBrand(brand);
+                            setInputProductTypeName(
+                              productType.product_type_name
+                            );
+                            setEditingProductType(productType);
                           }}
                           onPress={onOpen}
                           className="bg-edit-theme hover:bg-edit-hover-theme text-white">
@@ -277,9 +284,9 @@ const ManageBrands = () => {
                                 "Are you sure you want to delete this brand?"
                               )
                             ) {
-                              deleteBrandData(brand.brand_id)
+                              deleteProductTypeData(productType.product_type_id)
                                 .then(() => {
-                                  fetchBrands();
+                                  fetchProductCategories();
                                 })
                                 .catch((error) => {
                                   console.error("An error occurred:", error);
@@ -294,7 +301,7 @@ const ManageBrands = () => {
                   }
                   return (
                     <TableCell>
-                      {brand[columnKey as keyof typeof brand]}
+                      {productType[columnKey as keyof typeof productType]}
                     </TableCell>
                   );
                 }}
@@ -307,4 +314,4 @@ const ManageBrands = () => {
   );
 };
 
-export default ManageBrands;
+export default ManageProductCategories;
