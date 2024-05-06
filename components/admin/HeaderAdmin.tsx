@@ -5,7 +5,7 @@ import AuthButton from "../AuthButton";
 
 const HeaderAdminComponent = () => {
   return (
-    <header className="bg-purple-700 text-white p-4 w-full flex items-center justify-center">
+    <header className="bg-main-theme text-white p-4 w-full flex items-center justify-center">
       <div className="w-full max-w-4xl flex justify-between items-center">
         <Link
           href="/admin/protected"

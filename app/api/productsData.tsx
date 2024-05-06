@@ -118,3 +118,31 @@ export const insertProductData = async (newProduct: {
     throw error;
   }
 };
+
+export const editProductData = async (
+  productId: number,
+  updatedProduct: {
+    product_name?: string;
+    upc_code?: string;
+    size?: string;
+    price?: number;
+    brand_id?: number | null;
+    product_type_id?: number | null;
+  }
+) => {
+  try {
+    const response = await supabase
+      .from("Products")
+      .update(updatedProduct)
+      .match({ product_id: productId });
+
+    if (response.error) {
+      throw response.error;
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Error updating product:", error);
+    throw error;
+  }
+};

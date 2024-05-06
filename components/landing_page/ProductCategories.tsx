@@ -53,7 +53,7 @@ const ProductCategories = () => {
         </div>
       ) : (
         <div className="container mx-auto">
-          <h2 className="text-2xl font-bold text-purple-700 mb-6">
+          <h2 className="text-2xl font-bold text-main-theme mb-6">
             Browse by Category
           </h2>
           <Carousel
@@ -75,7 +75,7 @@ const ProductCategories = () => {
                     className="w-full h-48 object-cover"
                   />
                   <div className="p-4">
-                    <h3 className="text-lg font-semibold text-purple-700">
+                    <h3 className="text-lg font-semibold text-main-theme">
                       {category.name}
                     </h3>
                   </div>
@@ -88,7 +88,7 @@ const ProductCategories = () => {
             {categories.slice(0, 4).map((category) => (
               <React.Fragment key={category.name}>
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-purple-700 ">
+                  <h2 className="text-2xl font-bold text-main-theme ">
                     {category.name}
                   </h2>
 
@@ -119,8 +119,8 @@ const ProductCategories = () => {
                           />
                           <Link
                             href={`/products/${category.route}/${product.product_id}`}
-                            className="text-purple-800">
-                            <h4 className="text-lg font-medium whitespace-nowrap overflow-ellipsis overflow-hidden text-purple-800">
+                            className="text-main-theme">
+                            <h4 className="text-lg font-medium whitespace-nowrap overflow-ellipsis overflow-hidden text-main-theme">
                               {product.product_name}
                             </h4>
                           </Link>
@@ -131,7 +131,7 @@ const ProductCategories = () => {
                               onClick={() => {
                                 dispatch(addToCart(product));
                               }}
-                              className="rounded-lg bg-purple-700 px-3 py-2 text-white hover:bg-purple-800">
+                              className="rounded-lg bg-main-theme px-3 py-2 text-white hover:bg-main-hover-theme">
                               <MdOutlineShoppingCart />
                             </button>
                           </div>

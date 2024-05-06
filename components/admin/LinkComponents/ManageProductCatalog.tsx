@@ -2,32 +2,39 @@
 
 import {
   deleteProductData,
+  editProductData,
   fetchAllProductsData,
   insertProductData,
 } from "@/app/api/productsData";
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, Fragment, use } from "react";
+
 import {
-  Button,
-  ComboBox,
-  Input,
-  Label,
-  ListBox,
-  ListBoxItem,
-  Popover,
-} from "react-aria-components";
-import {
-  MdArrowDropDown,
   MdDeleteOutline,
   MdNavigateBefore,
   MdNavigateNext,
   MdOutlineEdit,
-  MdOutlineSearch,
 } from "react-icons/md";
+
+import {
+  Autocomplete,
+  AutocompleteItem,
+  Breadcrumbs,
+  BreadcrumbItem,
+  Button,
+  Input,
+  Table,
+  TableHeader,
+  TableBody,
+  TableColumn,
+  TableRow,
+  TableCell,
+} from "@nextui-org/react";
 
 import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link";
 import { fetchBrandsData } from "@/app/api/brandsData";
 import { fetchProductTypesData } from "@/app/api/productTypesData";
+import { SearchIcon } from "@/components/SearchIcon";
 
 type Product = {
   product_id: number;
@@ -39,24 +46,6 @@ type Product = {
   brand_name: string;
   product_type_id: number | null;
   product_type_name: string;
-};
-
-type ProductState = {
-  product_name: string;
-  upc_code: string;
-  size: string;
-  price: number;
-  brand_id: number | null;
-  product_type_id: number | null;
-};
-
-const initialProductState: ProductState = {
-  product_name: "",
-  upc_code: "",
-  size: "",
-  price: 0,
-  brand_id: null,
-  product_type_id: null,
 };
 
 type Brand = {
@@ -71,10 +60,9 @@ type ProductType = {
 
 const ManageProductCatalog = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  // const [newProduct, setNewProduct] = useState(initialProductState);
 
   const [searchValue, setSearchValue] = useState("");
-  const entriesPerPage = 10;
+  const entriesPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const [numOfEntries, setNumOfEntries] = useState(1);
 
@@ -140,6 +128,7 @@ const ManageProductCatalog = () => {
     fetchProductTypes();
   }, []);
 
+  // new product add
   const [inputProductName, setInputProductName] = useState("");
   const [inputUpcCode, setInputUpcCode] = useState("");
   const [inputSize, setInputSize] = useState("");
@@ -149,12 +138,8 @@ const ManageProductCatalog = () => {
     number | null
   >();
 
-  const [currentOptionBrandId, setCurrentOptionBrandId] = useState("");
-  const [currentOptionProductTypeId, setCurrentOptionProductTypeId] =
-    useState("");
-
-  const handleAddProduct = async () => {
-    const newProduct = {
+  const handleAddOrEditProduct = async () => {
+    const productData = {
       product_name: inputProductName,
       upc_code: inputUpcCode,
       size: inputSize,
@@ -162,8 +147,14 @@ const ManageProductCatalog = () => {
       brand_id: selectedBrandId || null,
       product_type_id: selectedProductTypeId || null,
     };
+
     try {
-      await insertProductData(newProduct);
+      if (editingProduct) {
+        await editProductData(editingProduct.product_id, productData);
+      } else {
+        await insertProductData(productData);
+      }
+
       setIsModalOpen(false);
       fetchProducts();
 
@@ -173,12 +164,34 @@ const ManageProductCatalog = () => {
       setInputPrice("");
       setSelectedBrandId(null);
       setSelectedProductTypeId(null);
-      setCurrentOptionBrandId("");
-      setCurrentOptionProductTypeId("");
+      setEditingProduct(null);
     } catch (error) {
       console.error("An error occurred:", error);
     }
   };
+
+  // edit spedific product
+  const [editingProduct, setEditingProduct] = useState<{
+    product_id: number;
+    product_name: string;
+    upc_code: string;
+    size: string;
+    price: number;
+    brand_id: number | null;
+    brand_name: string;
+    product_type_id: number | null;
+    product_type_name: string;
+  } | null>(null);
+
+  const columns = [
+    { key: "product_name", label: "Product Name" },
+    { key: "upc_code", label: "UPC Code" },
+    { key: "size", label: "Size" },
+    { key: "price", label: "Price" },
+    { key: "brand_name", label: "Brand" },
+    { key: "product_type_name", label: "Category" },
+    { key: "actions", label: "Actions" },
+  ];
 
   return (
     <>
@@ -192,281 +205,309 @@ const ManageProductCatalog = () => {
             <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
               <Dialog.Title
                 as="h3"
-                className="text-xl leading-6 font-bold text-purple-800">
-                Add New Product
+                className="text-xl leading-6 font-bold text-main-theme">
+                {editingProduct ? "Edit Product" : "Add New Product"}
               </Dialog.Title>
               <div className="w-full">
                 <div className="grid grid-cols-2 w-full my-5">
-                  <div className="w-full px-2 mb-2">
-                    <label htmlFor="product_name" className="combobox-label">
+                  <div className="form-container">
+                    <label htmlFor="product_name" className="form-label">
                       Product Name
                     </label>
-                    <input
+                    <Input
                       type="text"
                       id="product_name"
                       name="product_name"
                       placeholder="Product Name"
                       value={inputProductName}
                       onChange={(e) => setInputProductName(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
                     />
                   </div>
-                  <div className="w-full px-2 mb-2">
-                    <label htmlFor="upc_code" className="combobox-label">
+                  <div className="form-container">
+                    <label htmlFor="upc_code" className="form-label">
                       UPC Code
                     </label>
-                    <input
+                    <Input
                       type="text"
                       id="upc_code"
                       name="upc_code"
                       placeholder="0000-0000-0000"
                       value={inputUpcCode}
                       onChange={(e) => setInputUpcCode(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
                     />
                   </div>
-                  <div className="w-full px-2 mb-2">
-                    <label htmlFor="size" className="combobox-label">
+                  <div className="form-container">
+                    <label htmlFor="size" className="form-label">
                       Size
                     </label>
-                    <input
+                    <Input
                       type="text"
                       id="size"
                       name="size"
                       placeholder="Size"
                       value={inputSize}
                       onChange={(e) => setInputSize(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
                     />
                   </div>
-                  <div className="w-full px-2 mb-2">
-                    <label htmlFor="price" className="combobox-label">
+                  <div className="form-container">
+                    <label htmlFor="price" className="form-label">
                       Price
                     </label>
-                    <input
+                    <Input
                       type="number"
                       id="price"
                       name="price"
                       placeholder="Price"
                       value={inputPrice}
                       onChange={(e) => setInputPrice(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded"
                     />
                   </div>
-                  <div className="combobox-container">
-                    <ComboBox
-                      selectedKey={currentOptionBrandId}
-                      onSelectionChange={(selected) => {
-                        setCurrentOptionBrandId(
-                          selected ? selected.toString() : ""
+                  <div className="form-container">
+                    <label htmlFor="brand" className="form-label">
+                      Brand
+                    </label>
+                    <Autocomplete
+                      label="Select a brand"
+                      id="brand"
+                      className="max-w-xs"
+                      defaultInputValue={
+                        editingProduct && editingProduct.brand_id
+                          ? editingProduct.brand_name.toString()
+                          : ""
+                      }
+                      onInputChange={(value) => {
+                        const selectedBrand = brands.find(
+                          (brand) => brand.brand_name.toString() === value
                         );
+                        if (selectedBrand) {
+                          setSelectedBrandId(selectedBrand.brand_id);
+                        }
                       }}>
-                      <Label className="combobox-label">Brand</Label>
-                      <div className="combobox-input-group">
-                        <Input
-                          className="combobox-input"
-                          placeholder="Select brand"
-                        />
-                        <Button className="combobox-button">
-                          <MdArrowDropDown />
-                        </Button>
-                      </div>
-                      <Popover className="combobox-popover">
-                        <ListBox>
-                          {brands.map((brand) => (
-                            <ListBoxItem
-                              key={brand.brand_id}
-                              onHoverChange={(isHovered) => {
-                                if (isHovered) {
-                                  // console.log("brand_id: ", brand.brand_id);
-                                  setSelectedBrandId(brand.brand_id);
-                                }
-                              }}
-                              className="combobox-list-item">
-                              {brand.brand_name}
-                            </ListBoxItem>
-                          ))}
-                        </ListBox>
-                      </Popover>
-                    </ComboBox>
+                      {brands.map((brand) => (
+                        <AutocompleteItem
+                          key={brand.brand_id}
+                          value={brand.brand_id.toString()}>
+                          {brand.brand_name}
+                        </AutocompleteItem>
+                      ))}
+                    </Autocomplete>
                   </div>
-                  <div className="combobox-container">
-                    <ComboBox
-                      selectedKey={currentOptionProductTypeId}
-                      onSelectionChange={(selected) => {
-                        setCurrentOptionProductTypeId(
-                          selected ? selected.toString() : ""
+                  <div className="form-container">
+                    <label htmlFor="product_type" className="form-label">
+                      Product Type
+                    </label>
+                    <Autocomplete
+                      label="Select a type"
+                      id="product_type"
+                      className="max-w-xs"
+                      defaultInputValue={
+                        editingProduct && editingProduct.product_type_id
+                          ? editingProduct.product_type_name.toString()
+                          : ""
+                      }
+                      onInputChange={(value) => {
+                        const selectedProductType = productTypes.find(
+                          (type) => type.product_type_name.toString() === value
                         );
+                        if (selectedProductType) {
+                          setSelectedProductTypeId(
+                            selectedProductType.product_type_id
+                          );
+                        }
                       }}>
-                      <Label className="combobox-label">Product Type</Label>
-                      <div className="combobox-input-group">
-                        <Input
-                          className="combobox-input"
-                          placeholder="Select type"
-                        />
-                        <Button className="combobox-button">
-                          <MdArrowDropDown />
-                        </Button>
-                      </div>
-                      <Popover className="combobox-popover">
-                        <ListBox>
-                          {productTypes.map((type) => (
-                            <ListBoxItem
-                              key={type.product_type_id}
-                              onHoverChange={(isHovered) => {
-                                if (isHovered) {
-                                  // console.log(
-                                  //   "product_type_id: ",
-                                  //   type.product_type_id
-                                  // );
-                                  setSelectedProductTypeId(
-                                    type.product_type_id
-                                  );
-                                }
-                              }}
-                              className="combobox-list-item">
-                              {type.product_type_name}
-                            </ListBoxItem>
-                          ))}
-                        </ListBox>
-                      </Popover>
-                    </ComboBox>
+                      {productTypes.map((type) => (
+                        <AutocompleteItem
+                          key={type.product_type_id}
+                          value={type.product_type_id.toString()}>
+                          {type.product_type_name}
+                        </AutocompleteItem>
+                      ))}
+                    </Autocomplete>
                   </div>
                 </div>
 
                 <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-xl">
+                  <Button
+                    radius="md"
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setInputProductName("");
+                      setInputUpcCode("");
+                      setInputSize("");
+                      setInputPrice("");
+                      setSelectedBrandId(null);
+                      setSelectedProductTypeId(null);
+                    }}
+                    className="bg-disabled-theme hover:bg-disabled-hover-theme text-white">
                     Close
-                  </button>
-                  <button
-                    onClick={handleAddProduct}
+                  </Button>
+                  <Button
+                    radius="md"
+                    onClick={handleAddOrEditProduct}
                     disabled={
                       !inputProductName ||
                       !inputUpcCode ||
                       !inputPrice ||
-                      !currentOptionBrandId ||
-                      !currentOptionProductTypeId
+                      !selectedBrandId ||
+                      !selectedProductTypeId
                     }
-                    className={`bg-purple-500 text-white py-2 px-4 rounded-xl ${
+                    className={`bg-main-theme text-white ${
                       !inputProductName ||
                       !inputUpcCode ||
                       !inputPrice ||
-                      !currentOptionBrandId ||
-                      !currentOptionProductTypeId
+                      !selectedBrandId ||
+                      !selectedProductTypeId
                         ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-purple-600"
+                        : "hover:bg-main-hover-theme"
                     }`}>
-                    Add Product
-                  </button>
+                    {editingProduct ? "Update Product" : "Add Product"}
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
         </Dialog>
       </Transition>
-      <div className="section-link-container">
-        <Link href="/admin/protected" className="section-link">
-          <h4>Dashboard</h4>
-        </Link>
-        <span>
-          <h3>&nbsp;/&nbsp;</h3>
-        </span>
-        <h3>Manage Product Catalog</h3>
-      </div>
+      <Breadcrumbs>
+        <BreadcrumbItem className="section-link">
+          <Link href="/admin/protected">Dashboard</Link>
+        </BreadcrumbItem>
+        <BreadcrumbItem>Manage Product Catalog</BreadcrumbItem>
+      </Breadcrumbs>
       <h1 className="section-title">Manage Product Catalog</h1>
 
-      <div>
+      <div className="flex flex-col gap-5">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-bold mb-2">Existing Products</h3>
-          <div className="flex gap-2">
-            <button
-              className="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-xl"
+          <div className="flex items-center gap-2">
+            <Button
+              radius="md"
+              className="bg-main-theme hover:bg-main-hover-theme text-white"
               onClick={() => setIsModalOpen(true)}>
               + Add
-            </button>
-            <div className="relative">
-              <MdOutlineSearch className="z-0 absolute text-gray-400 right-3 top-1/2 transform -translate-y-1/2 text-2xl" />
-              <input
-                type="text"
-                placeholder="Search products"
-                value={searchValue}
-                onChange={(e) => {
-                  setCurrentPage(1);
-                  setSearchValue(e.target.value);
-                }}
-                className="w-full border border-purple-700 focus:outline-none focus:ring-purple-700 focus:border-purple-700 focus:z-10 rounded-lg pl-3 pr-10 py-2"
-              />
-            </div>
+            </Button>
+            <Input
+              // label="Search"
+              isClearable
+              onClear={() => setSearchValue("")}
+              radius="lg"
+              classNames={{
+                label: "text-black/50 dark:text-white/90",
+                input: [
+                  "bg-transparent",
+                  "text-black/90 dark:text-white/90",
+                  "placeholder:text-default-700/50 dark:placeholder:text-white/60",
+                ],
+                innerWrapper: "bg-transparent",
+                inputWrapper: [
+                  // "shadow-xl",
+                  "bg-default-200/50",
+                  "dark:bg-default/60",
+                  "backdrop-blur-xl",
+                  "backdrop-saturate-200",
+                  "hover:bg-default-200/70",
+                  "dark:hover:bg-default/70",
+                  "group-data-[focused=true]:bg-default-200/50",
+                  "dark:group-data-[focused=true]:bg-default/60",
+                  "!cursor-text",
+                ],
+              }}
+              placeholder="Type to search..."
+              value={searchValue}
+              onChange={(e) => {
+                setCurrentPage(1);
+                setSearchValue(e.target.value);
+              }}
+              startContent={
+                <SearchIcon className="text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0" />
+              }
+            />
           </div>
         </div>
+        <Table aria-label="Product Catalog Table">
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn
+                key={column.key}
+                className="bg-main-theme text-white">
+                {column.label}
+              </TableColumn>
+            )}
+          </TableHeader>
+          <TableBody items={products} emptyContent={"No rows to display."}>
+            {(product) => (
+              <TableRow key={product.product_id}>
+                {(columnKey) => {
+                  if (columnKey === "actions") {
+                    return (
+                      <TableCell className="flex gap-2">
+                        <Button
+                          isIconOnly
+                          radius="sm"
+                          onClick={() => {
+                            setInputProductName(product.product_name);
+                            setInputUpcCode(product.upc_code);
+                            setInputSize(product.size);
+                            setInputPrice(product.price.toString());
+                            setSelectedBrandId(product.brand_id);
+                            setSelectedProductTypeId(product.product_type_id);
+                            setEditingProduct(product);
+                            setIsModalOpen(true);
+                          }}
+                          className="bg-edit-theme hover:bg-edit-hover-theme text-white">
+                          <MdOutlineEdit />
+                        </Button>
+                        <Button
+                          isIconOnly
+                          radius="sm"
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to delete this product?"
+                              )
+                            ) {
+                              deleteProductData(product.product_id)
+                                .then(() => {
+                                  fetchProducts();
+                                })
+                                .catch((error) => {
+                                  console.error(
+                                    "Error deleting product:",
+                                    error
+                                  );
+                                });
+                            }
+                          }}
+                          className="bg-delete-theme hover:bg-delete-hover-theme text-white">
+                          <MdDeleteOutline />
+                        </Button>
+                      </TableCell>
+                    );
+                  }
+                  return (
+                    <TableCell>
+                      {product[columnKey as keyof typeof product]}
+                    </TableCell>
+                  );
+                }}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
 
-        <div className="w-full min-h-[50svh]">
-          <table className="table-auto w-full ">
-            <thead>
-              <tr>
-                <th className="table-head-row">Product Name</th>
-                <th className="table-head-row">UPC Code</th>
-                <th className="table-head-row">Size</th>
-                <th className="table-head-row">Price</th>
-                <th className="table-head-row">Brand</th>
-                <th className="table-head-row">Category</th>
-                <th className="table-head-row">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product.product_id}>
-                  <td className="table-body-row">{product.product_name}</td>
-                  <td className="table-body-row">{product.upc_code}</td>
-                  <td className="table-body-row">{product.size}</td>
-                  <td className="table-body-row">${product.price}</td>
-                  <td className="table-body-row">{product.brand_name}</td>
-                  <td className="table-body-row">
-                    {product.product_type_name}
-                  </td>
-                  <td className="table-body-row flex">
-                    <button className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-2 rounded mr-2">
-                      <MdOutlineEdit />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "Are you sure you want to delete this product?"
-                          )
-                        ) {
-                          deleteProductData(product.product_id)
-                            .then(() => {
-                              fetchProducts();
-                            })
-                            .catch((error) => {
-                              console.error("Error deleting product:", error);
-                            });
-                        }
-                      }}
-                      className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded">
-                      <MdDeleteOutline />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex justify-between items-center mt-5">
-          <h3 className="text-gray-500">
+        <div className="flex justify-between items-center">
+          <h3 className="text-gray-500 text-sm">
             Page {currentPage} of {totalPages}
           </h3>
           <div className="flex justify-end items-center gap-3">
-            <button
+            <Button
+              isIconOnly
+              radius="md"
               onClick={() => setCurrentPage((old) => Math.max(old - 1, 1))}
               disabled={currentPage === 1}
               className="navigate-buttons">
               <MdNavigateBefore />
-            </button>
+            </Button>
             <input
               type="number"
               min="1"
@@ -480,14 +521,16 @@ const ManageProductCatalog = () => {
               }}
               className="text-center"
             />
-            <button
+            <Button
+              isIconOnly
+              radius="md"
               onClick={() =>
                 setCurrentPage((old) => Math.min(old + 1, totalPages))
               }
               disabled={currentPage === totalPages}
               className="navigate-buttons">
               <MdNavigateNext />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

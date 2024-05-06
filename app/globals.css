@@ -58,39 +58,16 @@
 }
 
 .input-form {
-  @apply appearance-none relative block w-full p-3 border border-purple-700 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-700 focus:border-purple-700 focus:z-10 sm:text-sm bg-gray-50;
+  @apply appearance-none relative block w-full p-3 border border-main-theme placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-main-theme focus:border-main-theme focus:z-10 sm:text-sm bg-gray-50;
 }
 
 .input-button {
-  @apply relative w-full flex justify-center p-3 border border-transparent text-sm font-medium rounded-md text-white bg-purple-700 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-700;
+  @apply relative w-full flex justify-center p-3 border border-transparent text-sm font-medium rounded-md text-white bg-main-theme hover:bg-main-theme focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-main-theme;
 }
-
-/* 
-// container section
-<div className="flex flex-col gap-20 items-center">
-// area to fill with screen width
-  <div className="w-full">
-    <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-    // the padding
-      <div className="w-full max-w-4xl flex justify-between items-center p-3 text-sm">
-        <DeployButton />
-        <AuthButton />
-      </div>
-    </nav>
-    <div className="py-6 font-bold bg-purple-950 text-center">
-      This is a protected page that you can only see as an authenticated
-      user Lorem ipsum dolor sit amet consectetur adipisicing elit.
-      Accusantium deleniti aspernatur quaerat magni enim facere, mollitia
-      natus laboriosam reiciendis alias iste sequi quam numquam corporis,
-      ducimus perspiciatis. Eaque, quas et?
-    </div>
-  </div>
-</div>
- */
 
 /* admin */
 .link-management-buttons {
-  @apply bg-purple-500 hover:bg-purple-600 text-white font-bold p-4 rounded-lg;
+  @apply bg-main-theme hover:bg-main-hover-theme text-white font-bold p-4 rounded-lg;
 }
 
 .section-link-container {
@@ -98,11 +75,11 @@
 }
 
 .section-link {
-  @apply text-purple-800;
+  @apply text-main-theme;
 }
 
 .section-title {
-  @apply text-purple-800 text-2xl font-bold my-5 mb-10;
+  @apply text-main-theme text-2xl font-bold my-5 mb-10;
 }
 
 .table-head-row {
@@ -114,7 +91,15 @@
 }
 
 .navigate-buttons {
-  @apply bg-purple-500 hover:bg-purple-600 text-white font-bold px-2 py-1 text-2xl rounded-lg;
+  @apply bg-main-theme hover:bg-main-hover-theme text-white font-bold text-2xl;
+}
+
+.form-container {
+  @apply w-full px-2 mb-2;
+}
+
+.form-label {
+  @apply block font-semibold mb-1;
 }
 
 /* Remove Arrows/Spinners */
@@ -129,33 +114,4 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type="number"] {
   -moz-appearance: textfield;
-}
-
-/* combobox */
-.combobox-container {
-  @apply w-full px-2 mb-2;
-}
-
-.combobox-label {
-  @apply block font-semibold mb-1;
-}
-
-.combobox-input-group {
-  @apply flex items-center border border-gray-300 rounded bg-white;
-}
-
-.combobox-input {
-  @apply w-full px-3 py-2;
-}
-
-.combobox-button {
-  @apply py-2 text-gray-500 rounded-r text-2xl;
-}
-
-.combobox-popover {
-  @apply mt-1 border border-gray-300 rounded bg-white max-h-24 overflow-auto;
-}
-
-.combobox-list-item {
-  @apply px-3 py-2 hover:bg-gray-200;
 }

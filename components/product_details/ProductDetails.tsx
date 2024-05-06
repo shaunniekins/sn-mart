@@ -8,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdOutlineShoppingCart } from "react-icons/md";
+import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/react";
 
 type Props = {
   productId: string;
@@ -43,26 +44,17 @@ const ProductDetails = ({ productId, productCategory }: Props) => {
         </div>
       ) : (
         <div className="container mx-auto p-4">
-          <div className="flex items-center text-sm">
-            <Link href="/" className="text-purple-800">
-              <h4>Home</h4>
-            </Link>
-            <span>
-              <h3>&nbsp;/&nbsp;</h3>
-            </span>
-            <Link
-              href={`/products/${productCategory}`}
-              className="text-purple-800">
-              <h3>{convertedCategory}&nbsp;</h3>
-            </Link>
-            <span>
-              <h3>&nbsp;/&nbsp;</h3>
-            </span>
-            <h3>{product?.product_name}</h3>
-          </div>
-          {/* <h1 className="text-purple-800 text-2xl font-bold my-5">
-            {product?.product_name}
-          </h1> */}
+          <Breadcrumbs>
+            <BreadcrumbItem className="section-link">
+              <Link href="/">Home</Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem className="section-link">
+              <Link href={`/products/${productCategory}`}>
+                {convertedCategory}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>{product?.product_name}</BreadcrumbItem>
+          </Breadcrumbs>
           <div className="product-details-container">
             <div className="flex justify-center items-center">
               <Image
@@ -74,7 +66,7 @@ const ProductDetails = ({ productId, productCategory }: Props) => {
               />
             </div>
             <div>
-              <h1 className="text-purple-800 text-4xl font-bold mb-3">
+              <h1 className="text-main-theme text-4xl font-bold mb-3">
                 {product?.product_name}
               </h1>
               <h3 className="text-xl">{product?.brand_name}</h3>
@@ -86,7 +78,7 @@ const ProductDetails = ({ productId, productCategory }: Props) => {
                     dispatch(addToCart(product));
                   }
                 }}
-                className="mt-10 mb-12 rounded-full bg-purple-700 px-14 py-4 text-white hover:bg-purple-800 flex items-center gap-2">
+                className="mt-10 mb-12 rounded-full bg-main-theme px-14 py-4 text-white hover:bg-main-hover-theme flex items-center gap-2">
                 <MdOutlineShoppingCart />
                 <p>Add to cart product</p>
               </button>

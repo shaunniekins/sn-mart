@@ -69,7 +69,7 @@ const HeaderComponent = () => {
   // console.log("user", user);
 
   return (
-    <header className="w-full bg-purple-700 text-white p-4 sticky top-0 z-50">
+    <header className="w-full bg-main-theme text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="flex items-center text-2xl font-bold">
           <Image
@@ -93,7 +93,7 @@ const HeaderComponent = () => {
             <li>
               {user ? (
                 <button
-                  className="hover:text-gray-300"
+                  className="hover:text-hover-gray-theme"
                   onClick={async () => {
                     await signOutCustomer();
                     setIsLoggedIn(false);
@@ -106,7 +106,7 @@ const HeaderComponent = () => {
                   </div>
                 </button>
               ) : (
-                <Link href="/signin" className="hover:text-gray-300">
+                <Link href="/signin" className="hover:text-hover-gray-theme">
                   <div className="flex gap-1 items-center">
                     <MdOutlinePerson2 className="text-xl" />
                     <h6 className="hidden md:block">Account</h6>
@@ -117,7 +117,7 @@ const HeaderComponent = () => {
             <li>
               <button
                 onClick={handleCartClick}
-                className="flex gap-1 items-center hover:text-gray-300">
+                className="flex gap-1 items-center hover:text-hover-gray-theme">
                 <MdOutlineShoppingCart className="text-xl" />
                 <h6 className="hidden md:block">Cart</h6>
               </button>
@@ -131,10 +131,10 @@ const HeaderComponent = () => {
           className="fixed right-0 top-0 h-full w-96 z-10 bg-white shadow-lg transition-all duration-300 flex flex-col">
           <div className="p-5">
             <div className="flex justify-between items-center ">
-              <h2 className="text-lg font-bold text-purple-700">Cart</h2>
+              <h2 className="text-lg font-bold text-main-theme">Cart</h2>
               <button
                 onClick={handleCartClick}
-                className="text-purple-700 hover:text-purple-800">
+                className="text-main-theme hover:text-hover-gray-theme">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -167,7 +167,7 @@ const HeaderComponent = () => {
                       />
                       <div className="flex flex-col text-sm">
                         <div className="flex justify-between">
-                          <h2 className="text-purple-700">
+                          <h2 className="text-main-theme">
                             {productDetails.product.product_name}
                           </h2>
                         </div>
@@ -181,7 +181,7 @@ const HeaderComponent = () => {
                                 })
                               )
                             }
-                            className="text-gray-500 hover:text-gray-700">
+                            className="text-gray-500 hover:text-hover-gray-theme">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
@@ -206,7 +206,7 @@ const HeaderComponent = () => {
                                 })
                               )
                             }
-                            className="text-gray-500 hover:text-gray-700">
+                            className="text-gray-500 hover:text-hover-gray-theme">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
@@ -232,7 +232,7 @@ const HeaderComponent = () => {
                       onClick={() =>
                         dispatch(removeFromCart(Number(productId)))
                       }
-                      className="text-gray-500 hover:text-gray-700">
+                      className="text-gray-500 hover:text-hover-gray-theme">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -254,7 +254,7 @@ const HeaderComponent = () => {
           </div>
           <hr />
           <div className="p-5">
-            <button className="w-full py-2 px-4 bg-purple-700 hover:bg-purple-800 text-white rounded-lg">
+            <button className="w-full py-2 px-4 bg-main-theme hover:bg-main-hover-theme text-white rounded-lg">
               Checkout
             </button>
           </div>

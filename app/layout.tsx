@@ -1,6 +1,7 @@
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { StoreProvider } from "@/utils/redux/StoreProvider";
+import { Providers } from "./providers";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={GeistSans.className}>
       <body className="bg-background text-foreground">
-        <StoreProvider>{children}</StoreProvider>
+        <Providers>
+          <StoreProvider>{children}</StoreProvider>
+        </Providers>
       </body>
     </html>
   );
