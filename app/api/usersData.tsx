@@ -32,7 +32,10 @@ export const fetchAllUsersData = async (
 ) => {
   const offset = (currentPage - 1) * entriesPerPage;
 
-  let query = supabase.from("ViewUsers").select().not("role", "is", null);
+  let query = supabase
+    .from("ViewUsers")
+    .select(`*`, { count: "exact" })
+    .not("role", "is", null);
 
   if (searchValue) {
     const searchFields = ["last_name", "first_name", "email"];
@@ -63,7 +66,7 @@ export const fetchAllUsersData = async (
 
 export const deleteUser = async (userId: string) => {
   try {
-    const response = await supabase.auth.admin.deleteUser(userId);
+    const response = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (response.error) {
       throw response.error;
@@ -79,37 +82,31 @@ export const deleteUser = async (userId: string) => {
 export const insertNewUser = async (newUser: {
   email: string;
   role: string;
+  password: string;
   last_name: string | null;
   first_name: string | null;
 }) => {
   try {
-    const response = await supabase.auth.signUp({
-      // const response = await supabaseAdmin.auth.admin.createUser({
+    const response = await supabaseAdmin.auth.admin.createUser({
       email: newUser.email,
-      password: "password",
-      //   user_metadata: {
-      //     role: newUser.role,
-      //     last_name: newUser.last_name,
-      //     first_name: newUser.first_name,
-      //   },
-      //   email_confirm: true,
-      //    the problem is it will logout current user (admin)
-      options: {
-        data: {
-          role: newUser.role,
-          last_name: newUser.last_name,
-          first_name: newUser.first_name,
-        },
+      password: newUser.password,
+      email_confirm: true,
+      user_metadata: {
+        role: newUser.role,
+        last_name: newUser.last_name,
+        first_name: newUser.first_name,
+        password: newUser.password,
       },
     });
 
     if (response.error) {
       throw response.error;
+    } else {
     }
 
     return response;
   } catch (error) {
-    console.error("Error adding product:", error);
+    console.error("Error adding user:", error);
     throw error;
   }
 };

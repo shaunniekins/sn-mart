@@ -24,7 +24,7 @@ const HeaderAdminComponent = () => {
     <header className="bg-main-theme text-white p-4 w-full flex items-center justify-center">
       <div className="w-full max-w-4xl flex justify-between items-center">
         <Link
-          href="/admin/protected"
+          href="/authuser/protected"
           className="flex items-center text-2xl font-bold">
           <Image
             src="/images/sn-mart-logo.svg"
@@ -39,14 +39,13 @@ const HeaderAdminComponent = () => {
         <div className="flex flex-col justify-end items-end">
           <div className="flex items-center gap-4">
             Hey, {user?.email}!
-            <form action={signOutAdmin}>
-              <Button
-                isIconOnly
-                radius="sm"
-                className="bg-delete-theme hover:bg-delete-hover-theme text-white">
-                <MdOutlineLogout />
-              </Button>
-            </form>
+            <Button
+              isIconOnly
+              radius="sm"
+              className="bg-delete-theme hover:bg-delete-hover-theme text-white"
+              onClick={() => signOutAdmin()}>
+              <MdOutlineLogout />
+            </Button>
           </div>
         </div>
       </div>

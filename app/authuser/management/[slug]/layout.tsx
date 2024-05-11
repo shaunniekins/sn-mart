@@ -19,7 +19,7 @@ export default function SlugLayout({
   return (
     <div className="bg-white flex flex-col min-h-[100svh] max-w-screen justify-center items-center">
       <HeaderAdminComponent />
-      <div className="w-full max-w-4xl px-6 py-16">{children}</div>
+      <div className="h-full w-full max-w-4xl px-6 py-16">{children}</div>
       <Footer />
     </div>
   );

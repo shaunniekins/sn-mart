@@ -71,7 +71,7 @@ const HeaderComponent = () => {
   return (
     <header className="w-full bg-main-theme text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <Link href="/" className="flex items-center text-2xl font-bold">
+        <Link href="\home" className="flex items-center text-2xl font-bold">
           <Image
             src="/images/sn-mart-logo.svg"
             alt="SN Mart Logo"

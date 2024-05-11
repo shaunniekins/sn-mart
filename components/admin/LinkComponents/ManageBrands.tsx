@@ -24,7 +24,6 @@ import {
   Pagination,
   Spinner,
 } from "@nextui-org/react";
-import { SearchIcon } from "@/components/SearchIcon";
 
 import {
   deleteBrandData,
@@ -33,6 +32,7 @@ import {
   insertBrandData,
 } from "@/app/api/brandsData";
 import Link from "next/link";
+import { SearchIcon } from "@/components/icons/SearchIcon";
 
 type Brand = {
   brand_id: number;
@@ -166,7 +166,7 @@ const ManageBrands = () => {
       </Modal>
       <Breadcrumbs>
         <BreadcrumbItem className="section-link">
-          <Link href="/admin/protected">Dashboard</Link>
+          <Link href="/authuser/protected">Dashboard</Link>
         </BreadcrumbItem>
         <BreadcrumbItem>Manage Brands</BreadcrumbItem>
       </Breadcrumbs>

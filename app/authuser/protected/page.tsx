@@ -10,11 +10,11 @@ export default async function ProtectedPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/admin/signin");
+    return redirect("/authuser/signin");
   }
 
   if (user && user?.user_metadata?.role?.includes("customer")) {
-    return redirect("/");
+    return redirect("/home");
   }
 
   return <AdminDashboardComponent />;

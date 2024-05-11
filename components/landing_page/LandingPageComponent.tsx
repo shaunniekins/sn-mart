@@ -18,12 +18,10 @@ const LandingPageComponent = () => {
   });
 
   return (
-    <div className="obg-white flex flex-col min-h-[100svh]">
-      <HeaderComponent />
+    <>
       <HeroSection />
       <ProductCategories />
-      <Footer />
-    </div>
+    </>
   );
 };
 

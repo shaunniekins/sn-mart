@@ -5,7 +5,8 @@ SELECT
     created_at,
     raw_user_meta_data ->> 'role' AS role,
     raw_user_meta_data ->> 'last_name' AS last_name,
-    raw_user_meta_data ->> 'first_name' AS first_name
+    raw_user_meta_data ->> 'first_name' AS first_name,
+    raw_user_meta_data ->> 'password' AS password
 FROM
     auth.users;
 

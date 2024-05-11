@@ -7,7 +7,9 @@ import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import ManageBrands from "@/components/admin/LinkComponents/ManageBrands";
 import ManageProductCategories from "@/components/admin/LinkComponents/ManageProductCategories";
-import ManageUsers from "@/components/admin/ManageUsers";
+import ManageUsers from "@/components/admin/LinkComponents/ManageUsers";
+import { Suspense } from "react";
+import Loading from "@/app/loading";
 
 export default async function ManagementPage({
   params,
@@ -21,11 +23,11 @@ export default async function ManagementPage({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/admin/signin");
+    return redirect("/authuser/signin");
   }
 
   if (user && user?.user_metadata?.role?.includes("customer")) {
-    return redirect("/");
+    return redirect("/home");
   }
 
   let activeComponent = <AdminDashboardComponent />;

@@ -46,7 +46,7 @@ const ProductDetails = ({ productId, productCategory }: Props) => {
         <div className="container mx-auto p-4">
           <Breadcrumbs>
             <BreadcrumbItem className="section-link">
-              <Link href="/">Home</Link>
+              <Link href="\home">Home</Link>
             </BreadcrumbItem>
             <BreadcrumbItem className="section-link">
               <Link href={`/products/${productCategory}`}>

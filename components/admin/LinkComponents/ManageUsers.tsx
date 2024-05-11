@@ -24,20 +24,22 @@ import {
   Select,
   SelectItem,
 } from "@nextui-org/react";
-import { SearchIcon } from "@/components/SearchIcon";
 import Link from "next/link";
 import {
   deleteUser,
   editUser,
   fetchAllUsersData,
   insertNewUser,
-  rolesData,
 } from "@/app/api/usersData";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
+import { SearchIcon } from "@/components/icons/SearchIcon";
+import { EyeSlashFilledIcon } from "@/components/icons/EyeSlashFilledIcon";
+import { EyeFilledIcon } from "@/components/icons/EyeFilledIcon";
 
 type User = {
   id: string;
   email: string;
+  password: string;
   created_at: string;
   role: string;
   last_name: string | null;
@@ -45,7 +47,7 @@ type User = {
 };
 const ManageUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<string[]>([]);
+  const roles: string[] = ["customer", "store-manager", "vendor"];
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   // fetching
@@ -85,29 +87,15 @@ const ManageUsers = () => {
     fetchUsers();
   }, [searchValue, entriesPerPage, currentPage, selectedRoles]);
 
-  const fetchRoles = async () => {
-    try {
-      const response = await rolesData();
-      if (response === null) {
-        console.error("An error occurred while fetching brands data");
-      } else {
-        setRoles(response.map((role: { role: string }) => role.role));
-      }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchRoles();
-  }, []);
-
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [inputUserEmail, setInputUserEmail] = useState("");
   const [inputUserFirstName, setInputUserFirstName] = useState("");
   const [inputUserLastName, setInputUserLastName] = useState("");
   const [inputUserRole, setInputUserRole] = useState("");
+  const [inputUserPassword, setInputUserPassword] = useState("");
+  const [isInputUserPasswordVisible, setIsInputUserPasswordVisible] =
+    useState(true);
 
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
@@ -117,6 +105,7 @@ const ManageUsers = () => {
       first_name: inputUserFirstName,
       last_name: inputUserLastName,
       role: inputUserRole,
+      password: inputUserPassword,
     };
 
     try {
@@ -154,7 +143,7 @@ const ManageUsers = () => {
     { key: "last_name", label: "Last Name" },
     { key: "email", label: "Email" },
     { key: "role", label: "Role" },
-    // {key: "created_at", label: "Created At"},
+    { key: "password", label: "Password" },
     { key: "actions", label: "Actions" },
   ];
 
@@ -183,6 +172,36 @@ const ManageUsers = () => {
                   placeholder="example@gmail.com"
                   value={inputUserEmail}
                   onChange={(e) => setInputUserEmail(e.target.value)}
+                />
+              </div>
+              <div className="form-container">
+                <label htmlFor="password" className="form-label">
+                  Password
+                </label>
+                <Input
+                  type={isInputUserPasswordVisible ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  isRequired
+                  placeholder="*****"
+                  value={inputUserPassword}
+                  endContent={
+                    <button
+                      className="focus:outline-none"
+                      type="button"
+                      onClick={() =>
+                        setIsInputUserPasswordVisible(
+                          !isInputUserPasswordVisible
+                        )
+                      }>
+                      {isInputUserPasswordVisible ? (
+                        <EyeSlashFilledIcon className="text-2xl text-default-400 pointer-events-none" />
+                      ) : (
+                        <EyeFilledIcon className="text-2xl text-default-400 pointer-events-none" />
+                      )}
+                    </button>
+                  }
+                  onChange={(e) => setInputUserPassword(e.target.value)}
                 />
               </div>
               <div className="form-container">
@@ -260,7 +279,7 @@ const ManageUsers = () => {
 
       <Breadcrumbs>
         <BreadcrumbItem className="section-link">
-          <Link href="/admin/protected">Dashboard</Link>
+          <Link href="/authuser/protected">Dashboard</Link>
         </BreadcrumbItem>
         <BreadcrumbItem>Manage Users</BreadcrumbItem>
       </Breadcrumbs>
@@ -322,7 +341,10 @@ const ManageUsers = () => {
               }}>
               {roles.map((role) => (
                 <SelectItem key={role} value={role}>
-                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                  {role
+                    .split("-")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")}
                 </SelectItem>
               ))}
             </Select>
@@ -366,7 +388,7 @@ const ManageUsers = () => {
                   if (columnKey === "actions") {
                     return (
                       <TableCell className="flex gap-2 justify-center">
-                        {/* <Button
+                        <Button
                           isIconOnly
                           radius="sm"
                           onClick={() => {
@@ -374,12 +396,13 @@ const ManageUsers = () => {
                             setInputUserFirstName(user.first_name || "");
                             setInputUserLastName(user.last_name || "");
                             setInputUserRole(user.role);
+                            setInputUserPassword(user.password);
                             setEditingUser(user);
                           }}
                           onPress={onOpen}
                           className="bg-edit-theme hover:bg-edit-hover-theme text-white">
                           <MdOutlineEdit />
-                        </Button> */}
+                        </Button>
                         <Button
                           isIconOnly
                           radius="sm"

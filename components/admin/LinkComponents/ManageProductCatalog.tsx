@@ -35,7 +35,7 @@ import {
 import Link from "next/link";
 import { fetchBrandsData } from "@/app/api/brandsData";
 import { fetchProductTypesData } from "@/app/api/productTypesData";
-import { SearchIcon } from "@/components/SearchIcon";
+import { EyeFilledIcon } from "@/components/icons/EyeFilledIcon";
 
 type Product = {
   product_id: number;
@@ -367,7 +367,7 @@ const ManageProductCatalog = () => {
       </Modal>
       <Breadcrumbs>
         <BreadcrumbItem className="section-link">
-          <Link href="/admin/protected">Dashboard</Link>
+          <Link href="/authuser/protected">Dashboard</Link>
         </BreadcrumbItem>
         <BreadcrumbItem>Manage Product Catalog</BreadcrumbItem>
       </Breadcrumbs>

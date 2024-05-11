@@ -24,7 +24,6 @@ import {
   Pagination,
   Spinner,
 } from "@nextui-org/react";
-import { SearchIcon } from "@/components/SearchIcon";
 
 import Link from "next/link";
 import {
@@ -33,6 +32,7 @@ import {
   fetchAllProductTypesData,
   insertProductTypeData,
 } from "@/app/api/productTypesData";
+import { SearchIcon } from "@/components/icons/SearchIcon";
 
 type ProductType = {
   product_type_id: number;
@@ -170,7 +170,7 @@ const ManageProductCategories = () => {
       </Modal>
       <Breadcrumbs>
         <BreadcrumbItem className="section-link">
-          <Link href="/admin/protected">Dashboard</Link>
+          <Link href="/authuser/protected">Dashboard</Link>
         </BreadcrumbItem>
         <BreadcrumbItem>Manage Product Types</BreadcrumbItem>
       </Breadcrumbs>

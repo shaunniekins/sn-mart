@@ -3,8 +3,13 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: "/admin",
-        destination: "/admin/protected",
+        source: "/authuser",
+        destination: "/authuser/protected",
+        permanent: false,
+      },
+      {
+        source: "/",
+        destination: "/home",
         permanent: false,
       },
     ];

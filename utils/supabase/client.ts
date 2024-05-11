@@ -1,4 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export const createClient = () =>
   createBrowserClient(
@@ -7,7 +8,7 @@ export const createClient = () =>
   );
 
 export const createClientAdmin = () =>
-  createBrowserClient(
+  createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!
   );
