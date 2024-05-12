@@ -9,6 +9,11 @@ export async function signOutAdmin() {
   return redirect("/authuser/signin");
 }
 
+export async function signOutAdminNoRedirect() {
+  const supabase = createClient();
+  return await supabase.auth.signOut();
+}
+
 export async function signOutCustomer() {
   const supabase = createClient();
   await supabase.auth.signOut();

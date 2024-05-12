@@ -279,7 +279,7 @@ const ManageUsers = () => {
 
       <Breadcrumbs>
         <BreadcrumbItem className="section-link">
-          <Link href="/authuser/protected">Dashboard</Link>
+          <Link href="/authuser/admin/dashboard">Dashboard</Link>
         </BreadcrumbItem>
         <BreadcrumbItem>Manage Users</BreadcrumbItem>
       </Breadcrumbs>

@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: "/authuser",
-        destination: "/authuser/protected",
+        destination: "/authuser/admin/dashboard",
         permanent: false,
       },
       {

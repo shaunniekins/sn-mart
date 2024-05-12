@@ -16,7 +16,7 @@ export default async function CustomerSignup({
   } = await supabase.auth.getUser();
 
   if (user) {
-    return redirect("/authuser/protected");
+    return redirect("/authuser/admin/dashboard");
   }
 
   const signUp = async (formData: FormData) => {
@@ -38,6 +38,7 @@ export default async function CustomerSignup({
           first_name: first_name,
           last_name: last_name,
           role: "customer",
+          password: password,
         },
       },
     });

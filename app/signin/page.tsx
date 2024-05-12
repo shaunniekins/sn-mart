@@ -16,7 +16,7 @@ export default async function CustomerSignin({
   } = await supabase.auth.getUser();
 
   if (user) {
-    return redirect("/authuser/protected");
+    return redirect("/authuser/admin/dashboard");
   }
 
   const signIn = async (formData: FormData) => {

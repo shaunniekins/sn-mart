@@ -6,6 +6,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@internationalized/date": "^3.5.3",
+    "@js-joda/core": "^5.6.2",
     "@nextui-org/react": "^2.3.6",
     "@reduxjs/toolkit": "^2.2.3",
     "@supabase/ssr": "latest",

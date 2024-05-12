@@ -1,15 +1,16 @@
 import { redirect } from "next/navigation";
 
 import AdminDashboardComponent from "@/components/admin/AdminDashboardComponent";
-import ManageProductCatalog from "@/components/admin/LinkComponents/ManageProductCatalog";
+import ManageProductCatalog from "@/components/admin/components/ManageProductCatalog";
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest } from "next/server";
 import { headers } from "next/headers";
-import ManageBrands from "@/components/admin/LinkComponents/ManageBrands";
-import ManageProductCategories from "@/components/admin/LinkComponents/ManageProductCategories";
-import ManageUsers from "@/components/admin/LinkComponents/ManageUsers";
+import ManageBrands from "@/components/admin/components/ManageBrands";
+import ManageProductCategories from "@/components/admin/components/ManageProductCategories";
+import ManageUsers from "@/components/admin/components/ManageUsers";
 import { Suspense } from "react";
 import Loading from "@/app/loading";
+import ManageStores from "@/components/admin/components/ManageStores";
 
 export default async function ManagementPage({
   params,
@@ -41,6 +42,9 @@ export default async function ManagementPage({
       break;
     case "category":
       activeComponent = <ManageProductCategories />;
+      break;
+    case "store":
+      activeComponent = <ManageStores />;
       break;
     case "users":
       activeComponent = <ManageUsers />;

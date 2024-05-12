@@ -24,7 +24,7 @@ const HeaderAdminComponent = () => {
     <header className="bg-main-theme text-white p-4 w-full flex items-center justify-center">
       <div className="w-full max-w-4xl flex justify-between items-center">
         <Link
-          href="/authuser/protected"
+          href="/authuser/admin/dashboard"
           className="flex items-center text-2xl font-bold">
           <Image
             src="/images/sn-mart-logo.svg"

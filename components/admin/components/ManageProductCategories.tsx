@@ -170,7 +170,7 @@ const ManageProductCategories = () => {
       </Modal>
       <Breadcrumbs>
         <BreadcrumbItem className="section-link">
-          <Link href="/authuser/protected">Dashboard</Link>
+          <Link href="/authuser/admin/dashboard">Dashboard</Link>
         </BreadcrumbItem>
         <BreadcrumbItem>Manage Product Types</BreadcrumbItem>
       </Breadcrumbs>

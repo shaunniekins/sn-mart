@@ -4,7 +4,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "SN Mart | Admin",
+  title: "SN Mart | Auth",
   description: "Retail Store",
 };
 
@@ -15,9 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <>
-      <div className="min-h-screen flex flex-col items-center text-white bg-black">
-        {children}
-      </div>
+      <div className="min-h-screen flex flex-col items-center">{children}</div>
     </>
   );
 }

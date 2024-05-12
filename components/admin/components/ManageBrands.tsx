@@ -166,7 +166,7 @@ const ManageBrands = () => {
       </Modal>
       <Breadcrumbs>
         <BreadcrumbItem className="section-link">
-          <Link href="/authuser/protected">Dashboard</Link>
+          <Link href="/authuser/admin/dashboard">Dashboard</Link>
         </BreadcrumbItem>
         <BreadcrumbItem>Manage Brands</BreadcrumbItem>
       </Breadcrumbs>

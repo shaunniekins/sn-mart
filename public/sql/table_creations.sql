@@ -8,8 +8,10 @@ CREATE TABLE "Brands" (
 CREATE TABLE "Stores" (
     store_id SERIAL PRIMARY KEY,
     store_name VARCHAR(255) NOT NULL,
-    location VARCHAR(255),
-    operating_hours VARCHAR(255)
+    store_location VARCHAR(255),
+    store_operating_hours VARCHAR(255),
+    store_manager_id UUID NOT NULL,
+    CONSTRAINT Stores_store_manager_id_fkey FOREIGN KEY (store_manager_id) REFERENCES auth.users (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Customers Table
