@@ -1,8 +1,11 @@
 "use client";
 
 import {
+  deleteStoreInventoryData,
+  editStoreInventoryData,
   fetchCheckedProductInStoreInventoryData,
   fetchStoreInventoryData,
+  insertStoreInventoryData,
 } from "@/app/api/inventoryData";
 import { fetchAllProductsData } from "@/app/api/productsData";
 import { SearchIcon } from "@/components/icons/SearchIcon";
@@ -27,6 +30,8 @@ import {
 } from "@nextui-org/react";
 import React, { useEffect, useState } from "react";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
+import ProductCheckbox from "./ProductCheckbox";
+import { current } from "@reduxjs/toolkit";
 
 type Inventory = {
   inventory_id: number;
@@ -69,6 +74,8 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
     "idle" | "loading" | "error"
   >("idle");
   const modalTotalPages = Math.ceil(modalNumOfEntries / entriesPerPage);
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const fetchStoreInventory = async () => {
     try {
@@ -125,7 +132,17 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
     fetchProducts();
   }, [modalSearchValue, entriesPerPage, modalCurrentPage]);
 
-  const [includedProducts, setIncludedProducts] = useState<any[]>([]);
+  // const [includedProducts, setIncludedProducts] = useState<any[]>([]);
+
+  const [initialCheckboxState, setInitialCheckboxState] = useState<
+    Record<number, boolean>
+  >({});
+  const [currentCheckboxState, setCurrentCheckboxState] = useState<
+    Record<number, boolean>
+  >({});
+  // const [quantityInputs, setQuantityInputs] = useState<Record<number, number>>(
+  //   {}
+  // );
 
   // fetch products that are in store inventory
   // use to filter products
@@ -138,7 +155,13 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
         modalCurrentPage
       );
       if (response) {
-        setIncludedProducts(response);
+        // setIncludedProducts(response);
+        setInitialCheckboxState(
+          response.reduce(
+            (acc, productId) => ({ ...acc, [productId]: true }),
+            {}
+          )
+        );
       }
     } catch (error) {
       console.error("An error occurred:", error);
@@ -146,14 +169,56 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
   };
 
   useEffect(() => {
+    setCurrentCheckboxState({ ...initialCheckboxState });
+  }, [initialCheckboxState]);
+
+  useEffect(() => {
     fetchIncludedProductsInventory();
   }, [storeId, searchValue, entriesPerPage, currentPage]);
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   //   const [inputBrandName, setInputBrandName] = useState("");
 
   //   const [editingBrand, setEditingBrand] = useState<Inventory | null>(null);
+
+  const [currentSelectedButton, setCurrentSelectedButton] = useState("close");
+
+  const handleManageStoreInventory = async () => {
+    onClose();
+
+    for (const product of products) {
+      if (
+        initialCheckboxState[product.product_id] &&
+        !currentCheckboxState[product.product_id]
+      ) {
+        await deleteStoreInventoryData(storeId, product.product_id);
+      } else if (
+        !initialCheckboxState[product.product_id] &&
+        currentCheckboxState[product.product_id]
+      ) {
+        await insertStoreInventoryData({
+          store_id: storeId,
+          product_id: product.product_id,
+        });
+      }
+    }
+    fetchStoreInventory();
+    fetchIncludedProductsInventory();
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      handleRemoveInputValues();
+    }
+  }, [isOpen, currentSelectedButton]);
+
+  const handleRemoveInputValues = () => {
+    setModalCurrentPage(1);
+    setModalSearchValue("");
+
+    // // Reset the checkbox state to its initial state
+    // setCurrentCheckboxState({ ...initialCheckboxState });
+    // fetchIncludedProductsInventory();
+  };
 
   const columns = [
     { key: "product_name", label: "Product Name" },
@@ -172,7 +237,6 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
     { key: "price", label: "Price" },
     { key: "brand_name", label: "Brand" },
     { key: "product_type_name", label: "Category" },
-    { key: "quantity", label: "Quantity" },
     { key: "action", label: "Action" },
   ];
 
@@ -183,7 +247,7 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
         onOpenChange={onOpen}
         onClose={onClose}
         isDismissable={false}
-        size="5xl">
+        size="full">
         <ModalContent>
           <ModalHeader className="text-xl font-bold text-main-theme">
             Manage Store Inventory
@@ -262,22 +326,14 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
                     className="text-center">
                     {columnInModal.map((columnKey, columnIndex) => {
                       if (columnIndex === columnInModal.length - 1) {
-                        // Render the checkbox column
                         return (
                           <TableCell
                             key={`${product.product_id}-${columnKey.key}`}>
-                            {/* Check if the product ID exists in storeInventory */}
-                            {(() => {
-                              const isInInventory = storeInventory.some(
-                                (inventoryItem) =>
-                                  inventoryItem.product_id ===
-                                  product.product_id
-                              );
-                              // console.log(
-                              //   `Is product ${product.product_id} in inventory? ${isInInventory}`
-                              // );
-                              return <Checkbox isSelected={isInInventory} />;
-                            })()}
+                            <ProductCheckbox
+                              productId={product.product_id}
+                              currentCheckboxState={currentCheckboxState}
+                              setCurrentCheckboxState={setCurrentCheckboxState}
+                            />
                           </TableCell>
                         );
                       }
@@ -303,14 +359,38 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
             </Table>
           </ModalBody>
           <ModalFooter>
-            <Button color="danger" variant="light" onPress={onClose}>
+            <Button
+              color="danger"
+              variant="light"
+              onClick={() => {
+                const hasChanges = Object.keys(currentCheckboxState).some(
+                  (key) =>
+                    currentCheckboxState[key as any] !==
+                    initialCheckboxState[key as any]
+                );
+
+                if (hasChanges && currentSelectedButton !== "done") {
+                  const confirmLeave = window.confirm(
+                    "You have unsaved changes. Are you sure you want to leave?"
+                  );
+                  if (!confirmLeave) {
+                    return;
+                  }
+                }
+                fetchIncludedProductsInventory();
+                setCurrentSelectedButton("cancel");
+                onClose();
+              }}>
               Close
             </Button>
             <Button
               color="primary"
-              // onPress={handleManageStoreInventory}
+              onClick={() => {
+                setCurrentSelectedButton("done");
+                handleManageStoreInventory();
+              }}
               className={`bg-main-theme text-white 
-                 hover:bg-main-hover-theme`}>
+       hover:bg-main-hover-theme`}>
               Done
             </Button>
           </ModalFooter>
@@ -396,7 +476,7 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
             loadingContent={<Spinner color="secondary" />}
             loadingState={loadingState}>
             {(inventory) => (
-              <TableRow key={inventory.store_id} className="text-center">
+              <TableRow key={inventory.product_id} className="text-center">
                 {(columnKey) => {
                   if (columnKey === "price") {
                     return <TableCell>${inventory.price}</TableCell>;
