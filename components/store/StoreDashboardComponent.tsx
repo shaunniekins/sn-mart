@@ -296,7 +296,7 @@ function StoreDashboardComponent() {
             </div>
 
             <div className="w-full flex flex-col gap-4 mt-12">
-              <StoreInventory />
+              <StoreInventory storeId={stores[0]?.store_id} />
             </div>
           </>
         )}
