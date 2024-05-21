@@ -245,22 +245,24 @@ function StoreDashboardComponent() {
         <Button
           color="secondary"
           onClick={() => {
-            setInputStoreName(stores[0].store_name);
-            setInputStoreLocation(stores[0].store_location);
-            const openingHours = stores[0].store_operating_hours
-              .split(" - ")[0]
-              .split(":");
-            const closingHours = stores[0].store_operating_hours
-              .split(" - ")[1]
-              .split(":");
+            if (stores && stores.length > 0) {
+              setInputStoreName(stores[0].store_name);
+              setInputStoreLocation(stores[0].store_location);
+              const openingHours = stores[0].store_operating_hours
+                .split(" - ")[0]
+                .split(":");
+              const closingHours = stores[0].store_operating_hours
+                .split(" - ")[1]
+                .split(":");
 
-            setInputStoreOpeningTime(
-              new Time(parseInt(openingHours[0]), parseInt(openingHours[1]))
-            );
-            setInputStoreClosingTime(
-              new Time(parseInt(closingHours[0]), parseInt(closingHours[1]))
-            );
-            setEditingStore(stores[0]);
+              setInputStoreOpeningTime(
+                new Time(parseInt(openingHours[0]), parseInt(openingHours[1]))
+              );
+              setInputStoreClosingTime(
+                new Time(parseInt(closingHours[0]), parseInt(closingHours[1]))
+              );
+              setEditingStore(stores[0]);
+            }
           }}
           onPress={onOpen}>
           {storeExisting ? "Edit" : "Add"} Store

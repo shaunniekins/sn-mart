@@ -13,7 +13,7 @@ export const fetchStoreInventoryData = async (
 
   let query = supabase
     .from("ViewInventoryDetails")
-    .select()
+    .select(`*`, { count: "exact" })
     .eq("store_id", store_id);
 
   if (searchValue) {
@@ -43,40 +43,64 @@ export const fetchStoreInventoryData = async (
 };
 
 // Filtering array of product IDs (for checked products)
+// export const fetchCheckedProductInStoreInventoryData = async (
+//   store_id: number,
+//   searchValue: string,
+//   entriesPerPage: number,
+//   currentPage: number
+// ) => {
+//   const offset = (currentPage - 1) * entriesPerPage;
+
+//   let query = supabase
+//     .from("ViewInventoryDetails")
+//     .select()
+//     .eq("store_id", store_id);
+
+//   if (searchValue) {
+//     const searchFields = [
+//       "product_name",
+//       "upc_code",
+//       "brand_name",
+//       "product_type_name",
+//     ];
+//     const searchQuery = searchFields
+//       .map((field) => `${field}.ilike.%${searchValue}%`)
+//       .join(",");
+//     query = query.or(searchQuery);
+//   }
+
+//   try {
+//     const response = await query.range(offset, offset + entriesPerPage - 1);
+
+//     if (response.error) {
+//       throw response.error;
+//     }
+//     // Return an array of product IDs
+//     return response.data.map((item: any) => item.product_id);
+//   } catch (error) {
+//     console.error("Error fetching product:", error);
+//     throw error;
+//   }
+// };
+
+// Modified fetchCheckedProductInStoreInventoryData to return full product details
 export const fetchCheckedProductInStoreInventoryData = async (
   store_id: number,
-  searchValue: string,
-  entriesPerPage: number,
-  currentPage: number
+  productIds: number[]
 ) => {
-  const offset = (currentPage - 1) * entriesPerPage;
-
   let query = supabase
     .from("ViewInventoryDetails")
     .select()
-    .eq("store_id", store_id);
-
-  if (searchValue) {
-    const searchFields = [
-      "product_name",
-      "upc_code",
-      "brand_name",
-      "product_type_name",
-    ];
-    const searchQuery = searchFields
-      .map((field) => `${field}.ilike.%${searchValue}%`)
-      .join(",");
-    query = query.or(searchQuery);
-  }
+    .eq("store_id", store_id)
+    .in("product_id", productIds)
 
   try {
-    const response = await query.range(offset, offset + entriesPerPage - 1);
-
+    const response = await query
+    .order("product_name");
     if (response.error) {
       throw response.error;
     }
-    // Return an array of product IDs
-    return response.data.map((item: any) => item.product_id);
+    return response.data; // Return full product details
   } catch (error) {
     console.error("Error fetching product:", error);
     throw error;
@@ -119,7 +143,6 @@ export const deleteStoreInventoryData = async (
 export const insertStoreInventoryData = async (newInventory: {
   store_id: number;
   product_id: number;
-  quantity: number;
 }) => {
   try {
     const response = await supabase.from("Inventory").insert([newInventory]);

@@ -32,6 +32,8 @@ import React, { useEffect, useState } from "react";
 import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
 import ProductCheckbox from "./ProductCheckbox";
 import { current } from "@reduxjs/toolkit";
+import { createClient } from "@/utils/supabase/client";
+import { fetchStockRequestData } from "@/app/api/stockRequestData";
 
 type Inventory = {
   inventory_id: number;
@@ -54,6 +56,8 @@ type StoreInventoryProps = {
 };
 
 const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
+  const supabase = createClient();
+
   const [storeInventory, setStoreInventory] = useState<Inventory[]>([]);
 
   // fetching
@@ -66,7 +70,8 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
   >("idle");
   const totalPages = Math.ceil(numOfEntries / entriesPerPage);
 
-  // fetching for modal
+  // for modal
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [modalSearchValue, setModalSearchValue] = useState("");
   const [modalCurrentPage, setModalCurrentPage] = useState(1);
   const [modalNumOfEntries, setModalNumOfEntries] = useState(1);
@@ -75,7 +80,26 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
   >("idle");
   const modalTotalPages = Math.ceil(modalNumOfEntries / entriesPerPage);
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [products, setProducts] = useState<Product[]>([]);
+
+  const [initialCheckboxState, setInitialCheckboxState] = useState<
+    Record<number, boolean>
+  >({});
+  const [currentCheckboxState, setCurrentCheckboxState] = useState<
+    Record<number, boolean>
+  >({});
+
+  const [currentSelectedButton, setCurrentSelectedButton] = useState("close");
+
+  // stocks of the inventory
+  const [stockRequestData, setStockRequestData] = useState(null);
+  const {
+    isOpen: isRestockOpen,
+    onOpen: openRestock,
+    onClose: closeRestock,
+  } = useDisclosure();
+
+  const [stockRequests, setStockRequests] = useState<Record<number, any>>({});
 
   const fetchStoreInventory = async () => {
     try {
@@ -93,6 +117,16 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
         setStoreInventory(response.data as Inventory[]);
         setNumOfEntries(response.count || 1);
         setLoadingState("idle");
+
+        const stockRequests: { [key: number]: any } = {};
+        for (const item of response.data) {
+          const stockResponse = await fetchStockRequestData(
+            storeId,
+            item.product_id
+          );
+          stockRequests[item.product_id] = stockResponse;
+        }
+        setStockRequests(stockRequests);
       }
     } catch (error) {
       console.error("An error occurred:", error);
@@ -102,25 +136,77 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
 
   useEffect(() => {
     fetchStoreInventory();
+
+    const channel = supabase
+      .channel(`realtime inventory store_id=eq.${storeId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "Inventory",
+          filter: "store_id=eq." + storeId,
+        },
+        (payload) => {
+          if (payload.new) {
+            fetchStoreInventory();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [storeId, searchValue, entriesPerPage, currentPage]);
 
-  const [products, setProducts] = useState<Product[]>([]);
-
-  const fetchProducts = async () => {
+  // Modify fetchData function to compare product details
+  const fetchData = async () => {
     try {
       setModalLoadingState("loading");
-      const response = await fetchAllProductsData(
+
+      // Fetch products
+      const productsResponse = await fetchAllProductsData(
         modalSearchValue,
         entriesPerPage,
         modalCurrentPage
       );
-      if (response?.error) {
-        console.error(response.error);
+      if (productsResponse?.error) {
+        console.error(productsResponse.error);
         setModalLoadingState("error");
-      } else {
-        setProducts(response.data as Product[]);
-        setModalNumOfEntries(response.count || 1);
-        setModalLoadingState("idle");
+        return;
+      }
+
+      // Extract productIds from productsResponse
+      const productIds = productsResponse.data.map(
+        (product) => product.product_id
+      );
+
+      // Fetch included products inventory
+      const inventoryResponse = await fetchCheckedProductInStoreInventoryData(
+        storeId,
+        productIds
+      );
+
+      // Process response
+      setProducts(productsResponse.data as Product[]);
+      setModalNumOfEntries(productsResponse.count || 1);
+      setModalLoadingState("idle");
+
+      if (inventoryResponse) {
+        // Extract product IDs from inventory response
+        const includedProductIds = inventoryResponse.map(
+          (product) => product.product_id
+        );
+
+        // Update checkbox state based on included product IDs
+        const initialCheckboxState: Record<number, boolean> = {};
+        includedProductIds.forEach((productId) => {
+          initialCheckboxState[productId] = true;
+        });
+
+        setInitialCheckboxState(initialCheckboxState);
+        setCurrentCheckboxState(initialCheckboxState);
       }
     } catch (error) {
       console.error("An error occurred:", error);
@@ -129,59 +215,14 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, [modalSearchValue, entriesPerPage, modalCurrentPage]);
-
-  // const [includedProducts, setIncludedProducts] = useState<any[]>([]);
-
-  const [initialCheckboxState, setInitialCheckboxState] = useState<
-    Record<number, boolean>
-  >({});
-  const [currentCheckboxState, setCurrentCheckboxState] = useState<
-    Record<number, boolean>
-  >({});
-  // const [quantityInputs, setQuantityInputs] = useState<Record<number, number>>(
-  //   {}
-  // );
-
-  // fetch products that are in store inventory
-  // use to filter products
-  const fetchIncludedProductsInventory = async () => {
-    try {
-      const response = await fetchCheckedProductInStoreInventoryData(
-        storeId,
-        modalSearchValue,
-        entriesPerPage,
-        modalCurrentPage
-      );
-      if (response) {
-        // setIncludedProducts(response);
-        setInitialCheckboxState(
-          response.reduce(
-            (acc, productId) => ({ ...acc, [productId]: true }),
-            {}
-          )
-        );
-      }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    }
-  };
+    fetchData();
+  }, [storeId, modalSearchValue, entriesPerPage, modalCurrentPage]);
 
   useEffect(() => {
-    setCurrentCheckboxState({ ...initialCheckboxState });
-  }, [initialCheckboxState]);
+    fetchData();
+  }, [storeId, modalSearchValue, entriesPerPage, modalCurrentPage]);
 
-  useEffect(() => {
-    fetchIncludedProductsInventory();
-  }, [storeId, searchValue, entriesPerPage, currentPage]);
-
-  //   const [inputBrandName, setInputBrandName] = useState("");
-
-  //   const [editingBrand, setEditingBrand] = useState<Inventory | null>(null);
-
-  const [currentSelectedButton, setCurrentSelectedButton] = useState("close");
-
+  // modal manage store inventory (add or remove)
   const handleManageStoreInventory = async () => {
     onClose();
 
@@ -202,7 +243,9 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
       }
     }
     fetchStoreInventory();
-    fetchIncludedProductsInventory();
+    // fetchProducts();
+    // fetchIncludedProductsInventory();
+    fetchData();
   };
 
   useEffect(() => {
@@ -214,10 +257,6 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
   const handleRemoveInputValues = () => {
     setModalCurrentPage(1);
     setModalSearchValue("");
-
-    // // Reset the checkbox state to its initial state
-    // setCurrentCheckboxState({ ...initialCheckboxState });
-    // fetchIncludedProductsInventory();
   };
 
   const columns = [
@@ -228,6 +267,7 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
     { key: "brand_name", label: "Brand" },
     { key: "product_type_name", label: "Category" },
     { key: "quantity", label: "Quantity" },
+    { key: "action", label: "Action" },
   ];
 
   const columnInModal = [
@@ -239,6 +279,17 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
     { key: "product_type_name", label: "Category" },
     { key: "action", label: "Action" },
   ];
+
+  // const fetchStockRequest = async (product_id: number) => {
+  //   try {
+  //     const response = await fetchStockRequestData(storeId, product_id);
+  //     if (response) {
+  //       setStockRequestData(response[0]);
+  //     }
+  //   } catch (error) {
+  //     console.error("An error occurred:", error);
+  //   }
+  // };
 
   return (
     <>
@@ -330,6 +381,7 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
                           <TableCell
                             key={`${product.product_id}-${columnKey.key}`}>
                             <ProductCheckbox
+                              key={product.product_id}
                               productId={product.product_id}
                               currentCheckboxState={currentCheckboxState}
                               setCurrentCheckboxState={setCurrentCheckboxState}
@@ -377,7 +429,7 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
                     return;
                   }
                 }
-                fetchIncludedProductsInventory();
+                fetchData();
                 setCurrentSelectedButton("cancel");
                 onClose();
               }}>
@@ -481,6 +533,7 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
                   if (columnKey === "price") {
                     return <TableCell>${inventory.price}</TableCell>;
                   }
+
                   if (columnKey === "quantity") {
                     return (
                       <TableCell>
@@ -498,6 +551,38 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
                       </TableCell>
                     );
                   }
+
+                  if (columnKey === "action") {
+                    const stockRequestData =
+                      stockRequests[inventory.product_id];
+                    return (
+                      <TableCell>
+                        {stockRequestData &&
+                        stockRequestData.status === "Pending" ? (
+                          <Button
+                            color="primary"
+                            variant="ghost"
+                            // onClick={() =>
+                            //   handlePendingClick(inventory.product_id)
+                            // }
+                          >
+                            Pending
+                          </Button>
+                        ) : (
+                          <Button
+                            color="primary"
+                            variant="ghost"
+                            // onClick={() =>
+                            //   handleRestockClick(inventory.product_id)
+                            // }
+                          >
+                            Restock
+                          </Button>
+                        )}
+                      </TableCell>
+                    );
+                  }
+
                   return (
                     <TableCell>
                       {inventory[columnKey as keyof typeof inventory]}

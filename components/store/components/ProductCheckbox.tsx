@@ -15,13 +15,10 @@ const ProductCheckbox: React.FC<ProductCheckboxProps> = ({
   currentCheckboxState,
   setCurrentCheckboxState,
 }) => {
-  const [isChecked, setIsChecked] = useState(
-    currentCheckboxState[productId] || false
-  );
+  const isChecked = currentCheckboxState[productId] || false;
 
   const handlePress = () => {
     const newState = !isChecked;
-    setIsChecked(newState);
     setCurrentCheckboxState((prevState) => ({
       ...prevState,
       [productId]: newState,
