@@ -12,6 +12,7 @@ import { SearchIcon } from "@/components/icons/SearchIcon";
 import {
   Button,
   Checkbox,
+  input,
   Input,
   Modal,
   ModalBody,
@@ -33,7 +34,12 @@ import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
 import ProductCheckbox from "./ProductCheckbox";
 import { current } from "@reduxjs/toolkit";
 import { createClient } from "@/utils/supabase/client";
-import { fetchStockRequestData } from "@/app/api/stockRequestData";
+import {
+  editStockRequestData,
+  editStockRequestDataByProductId,
+  fetchStockRequestData,
+  insertStockRequestData,
+} from "@/app/api/stockRequestData";
 
 type Inventory = {
   inventory_id: number;
@@ -49,6 +55,7 @@ type Inventory = {
   product_type_name: string;
   price: number;
   quantity: number;
+  status: string;
 };
 
 type StoreInventoryProps = {
@@ -92,14 +99,14 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
   const [currentSelectedButton, setCurrentSelectedButton] = useState("close");
 
   // stocks of the inventory
-  const [stockRequestData, setStockRequestData] = useState(null);
+  // const [stockRequestData, setStockRequestData] = useState(null);
   const {
     isOpen: isRestockOpen,
     onOpen: openRestock,
     onClose: closeRestock,
   } = useDisclosure();
 
-  const [stockRequests, setStockRequests] = useState<Record<number, any>>({});
+  // const [stockRequests, setStockRequests] = useState<Record<number, any>>({});
 
   const fetchStoreInventory = async () => {
     try {
@@ -118,15 +125,15 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
         setNumOfEntries(response.count || 1);
         setLoadingState("idle");
 
-        const stockRequests: { [key: number]: any } = {};
-        for (const item of response.data) {
-          const stockResponse = await fetchStockRequestData(
-            storeId,
-            item.product_id
-          );
-          stockRequests[item.product_id] = stockResponse;
-        }
-        setStockRequests(stockRequests);
+        // const stockRequests: { [key: number]: any } = {};
+        // for (const item of response.data) {
+        //   const stockResponse = await fetchStockRequestData(
+        //     storeId,
+        //     item.product_id
+        //   );
+        //   stockRequests[item.product_id] = stockResponse;
+        // }
+        // setStockRequests(stockRequests);
       }
     } catch (error) {
       console.error("An error occurred:", error);
@@ -280,16 +287,56 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
     { key: "action", label: "Action" },
   ];
 
-  // const fetchStockRequest = async (product_id: number) => {
-  //   try {
-  //     const response = await fetchStockRequestData(storeId, product_id);
-  //     if (response) {
-  //       setStockRequestData(response[0]);
-  //     }
-  //   } catch (error) {
-  //     console.error("An error occurred:", error);
-  //   }
-  // };
+  useEffect(() => {
+    if (!isRestockOpen) {
+      handleRemoveInputValuesStock();
+    }
+  }, [isRestockOpen]);
+
+  const handleRemoveInputValuesStock = () => {
+    setInputQty(null);
+    setCurrentProductId(null);
+  };
+
+  const [requestNewStock, setRequestNewStock] = useState(true);
+
+  const [inputQty, setInputQty] = useState<number | null>(null);
+  const [currentProductId, setCurrentProductId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchRequestedQuantity = async () => {
+      if (currentProductId) {
+        const requestedQuantityArray = await fetchStockRequestData(
+          storeId,
+          currentProductId
+        );
+        if (requestedQuantityArray && requestedQuantityArray.length > 0) {
+          const requestedQuantity =
+            requestedQuantityArray[0].requested_quantity;
+          setInputQty(requestedQuantity);
+        }
+      }
+    };
+
+    fetchRequestedQuantity();
+  }, [currentProductId]);
+
+  const handleAddOrEditRestock = async () => {
+    if (requestNewStock) {
+      await insertStockRequestData({
+        store_id: storeId,
+        product_id: Number(currentProductId),
+        requested_quantity: Number(inputQty),
+      });
+    } else {
+     await editStockRequestDataByProductId(Number(currentProductId), {
+        requested_quantity: Number(inputQty),
+      });
+    }
+
+    fetchStoreInventory();
+    closeRestock();
+  };
 
   return (
     <>
@@ -448,6 +495,52 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+      <Modal
+        isOpen={isRestockOpen}
+        onOpenChange={openRestock}
+        onClose={closeRestock}
+        isDismissable={false}
+        // size="full"
+      >
+        <ModalContent>
+          <ModalHeader className="text-xl font-bold text-main-theme">
+            {!requestNewStock ? "Edit Restock Request" : "Request New Stock"}
+          </ModalHeader>
+          <ModalBody>
+            <div className="grid w-full gap-3">
+              <div className="form-container">
+                <label htmlFor="inputQty" className="form-label">
+                  Quantity
+                </label>
+                <Input
+                  type="number"
+                  id="inputQty"
+                  name="inputQty"
+                  placeholder="Quantity"
+                  value={inputQty !== null ? inputQty.toString() : ""}
+                  onChange={(e) => setInputQty(Number(e.target.value))}
+                />
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="danger" variant="light" onPress={closeRestock}>
+              Close
+            </Button>
+            <Button
+              color="primary"
+              onPress={handleAddOrEditRestock}
+              disabled={!inputQty || inputQty < 50}
+              className={`bg-main-theme text-white ${
+                !inputQty || inputQty < 50
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-main-hover-theme"
+              }`}>
+              {!requestNewStock ? "Edit Restock" : "Request Stock"}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       <div className="flex flex-col gap-5">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-bold mb-2">Store Inventory</h3>
@@ -551,34 +644,30 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
                       </TableCell>
                     );
                   }
-
                   if (columnKey === "action") {
-                    const stockRequestData =
-                      stockRequests[inventory.product_id];
                     return (
                       <TableCell>
-                        {stockRequestData &&
-                        stockRequestData.status === "Pending" ? (
-                          <Button
-                            color="primary"
-                            variant="ghost"
-                            // onClick={() =>
-                            //   handlePendingClick(inventory.product_id)
-                            // }
-                          >
-                            Pending
-                          </Button>
-                        ) : (
-                          <Button
-                            color="primary"
-                            variant="ghost"
-                            // onClick={() =>
-                            //   handleRestockClick(inventory.product_id)
-                            // }
-                          >
-                            Restock
-                          </Button>
-                        )}
+                        <Button
+                          color={
+                            inventory.status === "Pending" && inventory
+                              ? "warning"
+                              : "secondary"
+                          }
+                          variant="ghost"
+                          onClick={() => {
+                            setCurrentProductId(inventory.product_id);
+
+                            if (inventory.status === "Pending") {
+                              setRequestNewStock(false);
+                            } else {
+                              setRequestNewStock(true);
+                            }
+                          }}
+                          onPress={openRestock}>
+                          {inventory.status === "Pending"
+                            ? "Pending"
+                            : "Restock"}
+                        </Button>
                       </TableCell>
                     );
                   }

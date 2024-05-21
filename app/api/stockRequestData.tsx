@@ -70,6 +70,29 @@ export const editStockRequestData = async (
   }
 };
 
+export const editStockRequestDataByProductId = async (
+  product_id: number,
+  updatedStockRequest: {
+    requested_quantity?: number;
+    status?: string;
+  }
+) => {
+  try {
+    const response = await supabase
+      .from("Stock_Requests")
+      .update(updatedStockRequest)
+      .match({ product_id, status: "Pending"});
+
+    if (response.error) {
+      throw response.error;
+    }
+    return response;
+  } catch (error) {
+    console.error("Error editing stock request:", error);
+    throw error;
+  }
+};
+
 export const deleteStockRequestData = async (request_id: number) => {
   try {
     const response = await supabase
