@@ -8,7 +8,7 @@ CREATE TABLE "Brands" (
 CREATE TABLE "Stores" (
     store_id SERIAL PRIMARY KEY,
     store_name VARCHAR(255) NOT NULL,
-    store_location VARCHAR(255),
+    store_location VARCHAR(255) NOT NULL,
     store_operating_hours VARCHAR(255),
     store_manager_id UUID NOT NULL,
     CONSTRAINT Stores_store_manager_id_fkey FOREIGN KEY (store_manager_id) REFERENCES auth.users (id) ON UPDATE CASCADE ON DELETE CASCADE
@@ -24,7 +24,10 @@ CREATE TABLE "Customers" (
 -- Vendors Table
 CREATE TABLE "Vendors" (
     vendor_id SERIAL PRIMARY KEY,
-    vendor_name VARCHAR(255) UNIQUE NOT NULL
+    vendor_name VARCHAR(255) UNIQUE NOT NULL,
+    vendor_location VARCHAR(255) NOT NULL,
+    vendor_manager_id UUID NOT NULL,
+    CONSTRAINT Vendors_vendor_manager_id_fkey FOREIGN KEY (vendor_manager_id) REFERENCES auth.users (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Product Types Table

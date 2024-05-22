@@ -13,7 +13,7 @@ interface LoginFormProps {
 const LoginForm: React.FC<LoginFormProps> = ({ signIn, message }) => {
   const roles = [
     { label: "Store Manager", value: "store-manager" },
-    { label: "Vendor", value: "vendor" },
+    { label: "Vendor Manager", value: "vendor-manager" },
     { label: "Admin", value: "admin" },
   ];
 

@@ -21,7 +21,7 @@ export default async function ProtectedPage() {
     return redirect("/authuser/store/dashboard");
   }
 
-  if (user && user?.user_metadata?.role?.includes("vendor")) {
+  if (user && user?.user_metadata?.role?.includes("vendor-manager")) {
     return redirect("/authuser/supplier/dashboard");
   }
 

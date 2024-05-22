@@ -28,7 +28,7 @@ const AdminDashboardComponent = () => {
         <Link
           href="/authuser/admin/management/store"
           className="link-management-buttons">
-          Manage Stores
+          View Stores
         </Link>
         <Link
           href="/authuser/admin/management/vendor"

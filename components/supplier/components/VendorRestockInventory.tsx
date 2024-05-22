@@ -1,12 +1,23 @@
 "use client";
 
-import { fetchAllStoresData } from "@/app/api/storesData";
+import { fetchAllStockRequestsData } from "@/app/api/stockRequestData";
 import { SearchIcon } from "@/components/icons/SearchIcon";
+import { createClient } from "@/utils/supabase/client";
 import {
-  BreadcrumbItem,
-  Breadcrumbs,
+  Autocomplete,
+  AutocompleteItem,
+  Button,
+  Checkbox,
+  input,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   Pagination,
+  Select,
+  SelectItem,
   Spinner,
   Table,
   TableBody,
@@ -16,27 +27,36 @@ import {
   TableRow,
   useDisclosure,
 } from "@nextui-org/react";
-import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-type Store = {
+type RestockRequest = {
+  request_id: number;
   store_id: number;
+  product_id: number;
+  requested_quantity: number;
+  request_date: string;
+  status: string;
+  vendor_id: number;
+  vendor_name: string;
+  vendor_location: string;
   store_name: string;
-  store_location: string;
-  store_operating_hours: string;
-  manager_id: string;
-  manager_email: string;
-  manager_role: string;
-  manager_first_name: string;
-  manager_last_name: string;
+  product_name: string;
 };
 
-const ManageStores = () => {
-  const [stores, setStores] = useState<Store[]>([]);
+type VendorRestockInventoryProp = {
+  vendorId: number;
+};
+
+const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
+  vendorId,
+}) => {
+  const supabase = createClient();
+
+  const [vendorInventory, setVendorInventory] = useState<RestockRequest[]>([]);
 
   // fetching
+  const entriesPerPage = 10;
   const [searchValue, setSearchValue] = useState("");
-  const entriesPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const [numOfEntries, setNumOfEntries] = useState(1);
   const [loadingState, setLoadingState] = useState<
@@ -44,19 +64,26 @@ const ManageStores = () => {
   >("idle");
   const totalPages = Math.ceil(numOfEntries / entriesPerPage);
 
-  const fetchStores = async () => {
+  const [otherFilter, setOtherFilter] = useState("");
+
+  // for modal
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const fetchVendorInventory = async () => {
     try {
       setLoadingState("loading");
-      const response = await fetchAllStoresData(
+      const response = await fetchAllStockRequestsData(
+        vendorId,
         searchValue,
         entriesPerPage,
-        currentPage
+        currentPage,
+        otherFilter
       );
       if (response?.error) {
         console.error(response.error);
         setLoadingState("error");
       } else {
-        setStores(response.data as Store[]);
+        setVendorInventory(response.data as RestockRequest[]);
         setNumOfEntries(response.count || 1);
         setLoadingState("idle");
       }
@@ -67,31 +94,51 @@ const ManageStores = () => {
   };
 
   useEffect(() => {
-    fetchStores();
-  }, [searchValue, entriesPerPage, currentPage]);
+    fetchVendorInventory();
+
+    const channel = supabase
+      .channel(`realtime stock_requests:vendor_id=eq.${vendorId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "Stock_Requests",
+          filter: "vendor_id=eq." + vendorId,
+        },
+        (payload) => {
+          if (payload.new) {
+            fetchVendorInventory();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [vendorId, searchValue, entriesPerPage, currentPage, otherFilter]);
 
   const columns = [
     { key: "store_name", label: "Store Name" },
-    { key: "store_location", label: "Location" },
-    { key: "store_operating_hours", label: "Operating Hours" },
-    { key: "manager_name", label: "Manager Name" },
-    { key: "manager_email", label: "Manager Email" },
+    { key: "product_name", label: "Product Name" },
+    { key: "request_date", label: "Request Date" },
+    { key: "requested_quantity", label: "Requested Quantity" },
+    { key: "status", label: "Status" },
   ];
 
   return (
     <>
-      <Breadcrumbs>
-        <BreadcrumbItem className="section-link">
-          <Link href="/authuser/admin/dashboard">Dashboard</Link>
-        </BreadcrumbItem>
-        <BreadcrumbItem>View Stores</BreadcrumbItem>
-      </Breadcrumbs>
-      <h1 className="section-title">View Stores</h1>
-
       <div className="flex flex-col gap-5">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-bold mb-2">Stores</h3>
+          <h3 className="text-lg font-bold mb-2">Store Inventory</h3>
           <div className="flex items-center gap-2">
+            <Button
+              radius="md"
+              className="bg-main-theme hover:bg-main-hover-theme text-white"
+              onPress={onOpen}>
+              Manage
+            </Button>
             <Input
               isClearable
               onClear={() => setSearchValue("")}
@@ -126,10 +173,26 @@ const ManageStores = () => {
                 <SearchIcon className="text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0" />
               }
             />
+            <Select
+              name="status-filter"
+              variant="flat"
+              aria-label="Status Filter"
+              defaultSelectedKeys={["Pending"]}
+              onChange={(e) => {
+                setOtherFilter(e.target.value);
+              }}>
+              <SelectItem key={"Pending"} value="Pending">
+                Pending
+              </SelectItem>
+              <SelectItem key={"Done"} value="Done">
+                Done
+              </SelectItem>
+            </Select>
           </div>
         </div>
         <Table
-          aria-label="Store Table"
+          aria-label="Store Inventory Table"
+          key="store-inventory-table"
           bottomContent={
             totalPages > 0 ? (
               <div className="flex w-full justify-center">
@@ -156,23 +219,42 @@ const ManageStores = () => {
             )}
           </TableHeader>
           <TableBody
-            items={stores}
+            items={vendorInventory}
             emptyContent={"No rows to display."}
             loadingContent={<Spinner color="secondary" />}
             loadingState={loadingState}>
-            {(store) => (
-              <TableRow key={store.store_id} className="text-center">
+            {(venInv) => (
+              <TableRow key={venInv.request_id} className="text-center">
                 {(columnKey) => {
-                  if (columnKey === "manager_name") {
+                  if (columnKey === "status") {
                     return (
                       <TableCell>
-                        {store.manager_first_name} {store.manager_last_name}
+                        <Button
+                          color={
+                            venInv.status === "Pending" && venInv
+                              ? "warning"
+                              : "secondary"
+                          }
+                          variant="ghost"
+                          onClick={() => {
+                            // setCurrentProductId(inventory.product_id);
+                            // if (inventory.status === "Pending") {
+                            //   setRequestNewStock(false);
+                            // } else {
+                            //   setRequestNewStock(true);
+                            // }
+                          }}
+                          //   onPress={openRestock}
+                        >
+                          {venInv.status === "Pending" ? "Pending" : "Restock"}
+                        </Button>
                       </TableCell>
                     );
                   }
+
                   return (
                     <TableCell>
-                      {store[columnKey as keyof typeof store]}
+                      {venInv[columnKey as keyof typeof venInv]}
                     </TableCell>
                   );
                 }}
@@ -185,4 +267,4 @@ const ManageStores = () => {
   );
 };
 
-export default ManageStores;
+export default VendorRestockInventory;

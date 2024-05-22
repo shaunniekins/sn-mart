@@ -51,8 +51,8 @@ export default async function Login({
       }
       return redirect("/authuser/store/dashboard");
     }
-    if (data.user?.user_metadata?.role?.includes("vendor")) {
-      if (role !== "vendor") {
+    if (data.user?.user_metadata?.role?.includes("vendor-manager")) {
+      if (role !== "vendor-manager") {
         await signOutAdminNoRedirect();
         return redirect(`/authuser/signin?message=You are not a ${role}`);
       }

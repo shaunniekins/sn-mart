@@ -11,10 +11,13 @@ SELECT
     b.brand_name,
     pt.product_type_name,
     p.price,
-    i.quantity
+    i.quantity,
+    sr.status
 FROM
     public."Inventory" i
     JOIN public."Stores" s ON i.store_id = s.store_id
     JOIN public."Products" p ON i.product_id = p.product_id
     JOIN public."Brands" b ON p.brand_id = b.brand_id
-    JOIN public."Product_Types" pt ON p.product_type_id = pt.product_type_id;
+    JOIN public."Product_Types" pt ON p.product_type_id = pt.product_type_id
+    LEFT JOIN public."Stock_Requests" sr ON i.store_id = sr.store_id
+    AND i.product_id = sr.product_id;

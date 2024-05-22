@@ -10,6 +10,8 @@ import {
 import { fetchAllProductsData } from "@/app/api/productsData";
 import { SearchIcon } from "@/components/icons/SearchIcon";
 import {
+  Autocomplete,
+  AutocompleteItem,
   Button,
   Checkbox,
   input,
@@ -30,7 +32,6 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import React, { useEffect, useState } from "react";
-import { MdDeleteOutline, MdOutlineEdit } from "react-icons/md";
 import ProductCheckbox from "./ProductCheckbox";
 import { current } from "@reduxjs/toolkit";
 import { createClient } from "@/utils/supabase/client";
@@ -40,6 +41,7 @@ import {
   fetchStockRequestData,
   insertStockRequestData,
 } from "@/app/api/stockRequestData";
+import { fetchAllVendorsData } from "@/app/api/vendorsData";
 
 type Inventory = {
   inventory_id: number;
@@ -56,6 +58,13 @@ type Inventory = {
   price: number;
   quantity: number;
   status: string;
+};
+
+type Vendor = {
+  vendor_id: number;
+  vendor_name: string;
+  vendor_location: string;
+  vendor_manager_id: string;
 };
 
 type StoreInventoryProps = {
@@ -296,15 +305,20 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
   const handleRemoveInputValuesStock = () => {
     setInputQty(null);
     setCurrentProductId(null);
+    setSelectedVendorId(null);
+    setSelectedVendorName("");
   };
 
   const [requestNewStock, setRequestNewStock] = useState(true);
-
   const [inputQty, setInputQty] = useState<number | null>(null);
+
+  const [selectedVendorId, setSelectedVendorId] = useState<number | null>(null);
+  const [selectedVendorName, setSelectedVendorName] = useState<string>("");
+
   const [currentProductId, setCurrentProductId] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchRequestedQuantity = async () => {
+    const fetchDefaultData = async () => {
       if (currentProductId) {
         const requestedQuantityArray = await fetchStockRequestData(
           storeId,
@@ -313,13 +327,37 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
         if (requestedQuantityArray && requestedQuantityArray.length > 0) {
           const requestedQuantity =
             requestedQuantityArray[0].requested_quantity;
+          const currentVendorId = requestedQuantityArray[0].vendor_id;
+          const currentVendorName = requestedQuantityArray[0].vendor_name;
           setInputQty(requestedQuantity);
+          setSelectedVendorId(currentVendorId);
+          setSelectedVendorName(currentVendorName);
         }
       }
     };
 
-    fetchRequestedQuantity();
+    fetchDefaultData();
   }, [currentProductId]);
+
+  // temporary implementation of vendor/retailer
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+
+  const fetchVendors = async () => {
+    try {
+      const response = await fetchAllVendorsData();
+      if (response === null) {
+        console.error("An error occurred:", response);
+      } else {
+        setVendors(response as Vendor[]);
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchVendors();
+  }, []);
 
   const handleAddOrEditRestock = async () => {
     if (requestNewStock) {
@@ -327,10 +365,12 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
         store_id: storeId,
         product_id: Number(currentProductId),
         requested_quantity: Number(inputQty),
+        vendor_id: Number(selectedVendorId),
       });
     } else {
-     await editStockRequestDataByProductId(Number(currentProductId), {
+      await editStockRequestDataByProductId(Number(currentProductId), {
         requested_quantity: Number(inputQty),
+        vendor_id: Number(selectedVendorId),
       });
     }
 
@@ -521,6 +561,31 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
                   onChange={(e) => setInputQty(Number(e.target.value))}
                 />
               </div>
+              <div className="form-container">
+                <label htmlFor="inputQty" className="form-label">
+                  Vendor
+                </label>
+                <Autocomplete
+                  label="Select a supplier"
+                  id="supplier"
+                  placeholder={selectedVendorName}
+                  onInputChange={(value) => {
+                    const selectedVendor = vendors.find(
+                      (vendor) => vendor.vendor_name.toString() === value
+                    );
+                    if (selectedVendor) {
+                      setSelectedVendorId(selectedVendor.vendor_id);
+                    }
+                  }}>
+                  {vendors.map((vendor) => (
+                    <AutocompleteItem
+                      key={vendor.vendor_id}
+                      value={vendor.vendor_id.toString()}>
+                      {vendor.vendor_name}
+                    </AutocompleteItem>
+                  ))}
+                </Autocomplete>
+              </div>
             </div>
           </ModalBody>
           <ModalFooter>
@@ -530,9 +595,9 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
             <Button
               color="primary"
               onPress={handleAddOrEditRestock}
-              disabled={!inputQty || inputQty < 50}
+              disabled={!inputQty || inputQty < 50 || !selectedVendorId}
               className={`bg-main-theme text-white ${
-                !inputQty || inputQty < 50
+                !inputQty || inputQty < 50 || !selectedVendorId
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-main-hover-theme"
               }`}>

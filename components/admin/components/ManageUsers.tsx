@@ -47,7 +47,16 @@ type User = {
 };
 const ManageUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const roles: string[] = ["customer", "store-manager", "vendor"];
+  const rolesForFilter: string[] = [
+    "customer",
+    "store-manager",
+    "store-personnel",
+    "vendor-manager",
+    "vendor-personnel",
+  ];
+
+  const rolesForAdding: string[] = ["store-manager", "vendor-manager"];
+
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   // fetching
@@ -143,7 +152,7 @@ const ManageUsers = () => {
     { key: "last_name", label: "Last Name" },
     { key: "email", label: "Email" },
     { key: "role", label: "Role" },
-    { key: "password", label: "Password" },
+    // { key: "password", label: "Password" },
     { key: "actions", label: "Actions" },
   ];
 
@@ -241,7 +250,7 @@ const ManageUsers = () => {
                   placeholder="Select Role"
                   value={inputUserRole}
                   onChange={(e) => setInputUserRole(e.target.value)}>
-                  {roles.map((role) => (
+                  {rolesForAdding.map((role) => (
                     <SelectItem key={role} value={role}>
                       {role.charAt(0).toUpperCase() + role.slice(1)}
                     </SelectItem>
@@ -339,7 +348,7 @@ const ManageUsers = () => {
                 const roles = event.target.value.split(",");
                 setSelectedRoles(roles);
               }}>
-              {roles.map((role) => (
+              {rolesForFilter.map((role) => (
                 <SelectItem key={role} value={role}>
                   {role
                     .split("-")
