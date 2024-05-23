@@ -36,9 +36,11 @@ import ProductCheckbox from "./ProductCheckbox";
 import { current } from "@reduxjs/toolkit";
 import { createClient } from "@/utils/supabase/client";
 import {
+  editStockDispatchedDataByProductId,
   editStockRequestData,
   editStockRequestDataByProductId,
   fetchStockRequestData,
+  fetchStockRequestDataForQty,
   insertStockRequestData,
 } from "@/app/api/stockRequestData";
 import { fetchAllVendorsData } from "@/app/api/vendorsData";
@@ -113,6 +115,12 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
     isOpen: isRestockOpen,
     onOpen: openRestock,
     onClose: closeRestock,
+  } = useDisclosure();
+
+  const {
+    isOpen: isAcceptOpen,
+    onOpen: openAccept,
+    onClose: closeAccept,
   } = useDisclosure();
 
   // const [stockRequests, setStockRequests] = useState<Record<number, any>>({});
@@ -309,13 +317,16 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
     setSelectedVendorName("");
   };
 
-  const [requestNewStock, setRequestNewStock] = useState(true);
+  const [requestNewStock, setRequestNewStock] = useState("");
   const [inputQty, setInputQty] = useState<number | null>(null);
 
   const [selectedVendorId, setSelectedVendorId] = useState<number | null>(null);
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
 
   const [currentProductId, setCurrentProductId] = useState<number | null>(null);
+
+  const [currentProductIdForDispatch, setCurrentProductIdForDispatch] =
+    useState<number | null>(null);
 
   useEffect(() => {
     const fetchDefaultData = async () => {
@@ -360,18 +371,50 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
   }, []);
 
   const handleAddOrEditRestock = async () => {
-    if (requestNewStock) {
+    if (requestNewStock === "new-request") {
       await insertStockRequestData({
         store_id: storeId,
         product_id: Number(currentProductId),
         requested_quantity: Number(inputQty),
         vendor_id: Number(selectedVendorId),
       });
-    } else {
-      await editStockRequestDataByProductId(Number(currentProductId), {
-        requested_quantity: Number(inputQty),
-        vendor_id: Number(selectedVendorId),
-      });
+    } else if (requestNewStock === "pending") {
+      await editStockRequestDataByProductId(
+        Number(currentProductId),
+        Number(selectedVendorId),
+        {
+          requested_quantity: Number(inputQty),
+          vendor_id: Number(selectedVendorId),
+          status: "Pending",
+          request_date: new Date().toISOString(),
+        }
+      );
+    } else if (requestNewStock === "dispatch") {
+      const stockRequestData = await fetchStockRequestDataForQty(
+        Number(storeId),
+        Number(currentProductIdForDispatch)
+      );
+      let inputQty, formerQty;
+
+      if (stockRequestData && stockRequestData.length > 0) {
+        inputQty = stockRequestData[0].requested_quantity;
+        formerQty = stockRequestData[0].inventory_quantity;
+      }
+
+      await editStockDispatchedDataByProductId(
+        Number(currentProductIdForDispatch),
+        {
+          status: "Delivered",
+        }
+      );
+      await editStoreInventoryData(
+        storeId,
+        Number(currentProductIdForDispatch),
+        {
+          quantity: Number(formerQty) + Number(inputQty),
+        }
+      );
+      closeAccept();
     }
 
     fetchStoreInventory();
@@ -380,6 +423,32 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
 
   return (
     <>
+      <Modal
+        isOpen={isAcceptOpen}
+        onOpenChange={openAccept}
+        onClose={closeAccept}
+        isDismissable={false}
+        size="xs">
+        <ModalContent>
+          <ModalHeader className="text-xl font-bold text-main-theme">
+            Is this already delivered?
+          </ModalHeader>
+          <ModalBody>
+            <div className="grid w-full h-full gap-3 items-center justify-center">
+              <div className="form-container">
+                <Button color="secondary" onPress={handleAddOrEditRestock}>
+                  Confirm Delivered
+                </Button>
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="danger" variant="light" onPress={closeAccept}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       <Modal
         isOpen={isOpen}
         onOpenChange={onOpen}
@@ -714,23 +783,42 @@ const StoreInventory: React.FC<StoreInventoryProps> = ({ storeId }) => {
                       <TableCell>
                         <Button
                           color={
-                            inventory.status === "Pending" && inventory
+                            inventory.status === "Delivered"
+                              ? "success"
+                              : inventory.status === "Dispatch"
+                              ? "primary"
+                              : inventory.status === "Pending"
                               ? "warning"
                               : "secondary"
                           }
                           variant="ghost"
                           onClick={() => {
                             setCurrentProductId(inventory.product_id);
-
                             if (inventory.status === "Pending") {
-                              setRequestNewStock(false);
+                              setRequestNewStock("pending");
+                            } else if (inventory.status === "Dispatch") {
+                              setRequestNewStock("dispatch");
+                              setCurrentProductIdForDispatch(
+                                inventory.product_id
+                              );
+                            } else if (inventory.status === "Delivered") {
+                              setRequestNewStock("pending");
                             } else {
-                              setRequestNewStock(true);
+                              setRequestNewStock("new-request");
                             }
                           }}
-                          onPress={openRestock}>
-                          {inventory.status === "Pending"
-                            ? "Pending"
+                          onPress={() => {
+                            if (inventory.status !== "Dispatch") {
+                              openRestock();
+                            } else if (inventory.status === "Dispatch") {
+                              setCurrentProductId(inventory.product_id);
+                              openAccept();
+                            }
+                          }}>
+                          {inventory.status === "Pending" ||
+                          inventory.status === "Delivered" ||
+                          inventory.status === "Dispatch"
+                            ? inventory.status
                             : "Restock"}
                         </Button>
                       </TableCell>

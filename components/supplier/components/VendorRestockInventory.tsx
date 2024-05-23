@@ -1,6 +1,9 @@
 "use client";
 
-import { fetchAllStockRequestsData } from "@/app/api/stockRequestData";
+import {
+  editStockRequestData,
+  fetchAllStockRequestsData,
+} from "@/app/api/stockRequestData";
 import { SearchIcon } from "@/components/icons/SearchIcon";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -119,6 +122,24 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
     };
   }, [vendorId, searchValue, entriesPerPage, currentPage, otherFilter]);
 
+  const [currentStockRequestId, setCurrentStockRequestId] = useState<
+    number | null
+  >(null);
+
+  const handleAddOrEditRestockConfirmation = async () => {
+    if (currentStockRequestId) {
+      if (
+        window.confirm("Are you sure you want to dispatch this stock request?")
+      ) {
+        await editStockRequestData(currentStockRequestId, {
+          status: "Dispatch",
+        });
+      }
+    }
+
+    onClose();
+  };
+
   const columns = [
     { key: "store_name", label: "Store Name" },
     { key: "product_name", label: "Product Name" },
@@ -129,6 +150,34 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
 
   return (
     <>
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpen}
+        onClose={onClose}
+        isDismissable={false}
+        size="xs">
+        <ModalContent>
+          <ModalHeader className="text-xl font-bold text-main-theme">
+            Action to Restock
+          </ModalHeader>
+          <ModalBody>
+            <div className="grid w-full h-full gap-3 items-center justify-center">
+              <div className="form-container">
+                <Button
+                  color="secondary"
+                  onPress={handleAddOrEditRestockConfirmation}>
+                  Deliver Requested Quantity
+                </Button>
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="danger" variant="light" onPress={onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       <div className="flex flex-col gap-5">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-bold mb-2">Store Inventory</h3>
@@ -184,8 +233,11 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
               <SelectItem key={"Pending"} value="Pending">
                 Pending
               </SelectItem>
-              <SelectItem key={"Done"} value="Done">
-                Done
+              <SelectItem key={"Dispatch"} value="Dispatch">
+                Dispatch
+              </SelectItem>
+              <SelectItem key={"Delivered"} value="Delivered">
+                Delivered
               </SelectItem>
             </Select>
           </div>
@@ -231,22 +283,26 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
                       <TableCell>
                         <Button
                           color={
-                            venInv.status === "Pending" && venInv
+                            venInv.status === "Delivered"
+                              ? "success"
+                              : venInv.status === "Dispatch"
+                              ? "primary"
+                              : venInv.status === "Pending"
                               ? "warning"
                               : "secondary"
                           }
                           variant="ghost"
+                          disabled={venInv.status !== "Pending"}
                           onClick={() => {
-                            // setCurrentProductId(inventory.product_id);
-                            // if (inventory.status === "Pending") {
-                            //   setRequestNewStock(false);
-                            // } else {
-                            //   setRequestNewStock(true);
-                            // }
+                            venInv.status === "Pending" &&
+                              setCurrentStockRequestId(venInv.request_id);
                           }}
-                          //   onPress={openRestock}
-                        >
-                          {venInv.status === "Pending" ? "Pending" : "Restock"}
+                          onPress={() => {
+                            if (venInv.status === "Pending") {
+                              onOpen();
+                            }
+                          }}>
+                          {venInv.status}
                         </Button>
                       </TableCell>
                     );
