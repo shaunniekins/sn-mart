@@ -41,6 +41,45 @@ export const fetchAllStoresData = async (
   }
 };
 
+export const fetchStore = async () => {
+  try {
+    const response = await supabase
+      .from("ViewStoreDetails")
+      .select()
+      .order("store_name");
+
+    if (response.error) {
+      throw response.error;
+    }
+    return response;
+  } catch (error) {
+    console.error("Error fetching stores:", error);
+    throw error;
+  }
+};
+
+export const fetchSpecificStoreUsingId = async (store_id: number) => {
+  try {
+    const { data, error } = await supabase
+      .from("ViewStoreDetails")
+      .select()
+      .eq("store_id", store_id);
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error("No data returned");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching store:", error);
+    return null;
+  }
+};
+
 export const fetchSpecificStoreDetailsData = async (
   store_manager_id: string
 ) => {

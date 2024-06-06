@@ -19,19 +19,34 @@ import {
   updateQuantity,
 } from "@/utils/redux/features/products/cartReducer";
 import { useAppDispatch } from "@/utils/redux/hooks";
+import { useSelector } from "react-redux";
+import { RootState } from "@/utils/redux/store";
+import { fetchViewProductsDetailsFromSpecificStoreData } from "@/app/api/inventoryData";
 
 const ProductCategories = () => {
   const [products, setProducts] = useState<{ [key: string]: Product[] }>({});
   const [isLoading, setIsLoading] = useState(true);
+
+  const store = useSelector((state: RootState) => state.store);
 
   useEffect(() => {
     const fetchData = async () => {
       const productsByCategory: { [key: string]: Product[] } = {};
 
       for (const category of categories.slice(0, 4)) {
-        const data = await fetchViewProductsDetailsData(category.name);
-        if (data !== null) {
-          productsByCategory[category.name] = data;
+        if (!store || !store.selectedStore) {
+          const data = await fetchViewProductsDetailsData(category.name);
+          if (data !== null) {
+            productsByCategory[category.name] = data;
+          }
+        } else {
+          const data = await fetchViewProductsDetailsFromSpecificStoreData(
+            store.selectedStore.store_id,
+            category.name
+          );
+          if (data !== null) {
+            productsByCategory[category.name] = data;
+          }
         }
       }
 
@@ -40,7 +55,7 @@ const ProductCategories = () => {
     };
 
     fetchData();
-  }, []);
+  }, [store, categories]);
 
   // redux
   const dispatch = useAppDispatch();
@@ -63,7 +78,8 @@ const ProductCategories = () => {
             draggable={true}
             showDots={true}
             infinite={true}
-            partialVisible={false}>
+            partialVisible={false}
+            className="z-0">
             {categories.map((category) => (
               <Link href={category.link} key={category.name}>
                 <div
@@ -105,7 +121,8 @@ const ProductCategories = () => {
                     draggable={true}
                     showDots={false}
                     infinite={true}
-                    partialVisible={false}>
+                    partialVisible={false}
+                    className="z-0">
                     {products[category.name] &&
                       products[category.name].length > 0 &&
                       products[category.name].map((product) => (
@@ -130,6 +147,7 @@ const ProductCategories = () => {
                             <button
                               onClick={() => {
                                 dispatch(addToCart(product));
+                                console.log("product: ", product);
                               }}
                               className="rounded-lg bg-main-theme px-3 py-2 text-white hover:bg-main-hover-theme">
                               <MdOutlineShoppingCart />

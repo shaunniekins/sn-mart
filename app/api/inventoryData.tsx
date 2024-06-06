@@ -1,3 +1,4 @@
+import { convertUrlFriendlyCategory } from "@/utils/component_functions/conversion";
 import { createClient } from "@/utils/supabase/client";
 
 const supabase = createClient();
@@ -39,6 +40,29 @@ export const fetchStoreInventoryData = async (
   } catch (error) {
     console.error("Error fetching product:", error);
     throw error;
+  }
+};
+
+export const fetchViewProductsDetailsFromSpecificStoreData = async (
+  store_id: number,
+  categoryName: string
+) => {
+  const convertedCategoryName = convertUrlFriendlyCategory(categoryName);
+  try {
+    const { data, error } = await supabase
+      .from("ViewInventoryDetails")
+      .select()
+      .eq("store_id", store_id)
+      .eq("product_type_name", convertedCategoryName);
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return null;
   }
 };
 
@@ -92,11 +116,10 @@ export const fetchCheckedProductInStoreInventoryData = async (
     .from("ViewInventoryDetails")
     .select()
     .eq("store_id", store_id)
-    .in("product_id", productIds)
+    .in("product_id", productIds);
 
   try {
-    const response = await query
-    .order("product_name");
+    const response = await query.order("product_name");
     if (response.error) {
       throw response.error;
     }

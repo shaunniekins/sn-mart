@@ -9,6 +9,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/utils/redux/store";
+import { fetchViewProductsDetailsFromSpecificStoreData } from "@/app/api/inventoryData";
 
 type Props = {
   productCategory: string;
@@ -18,18 +21,26 @@ const ProductGrid = ({ productCategory }: Props) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const store = useSelector((state: RootState) => state.store);
+
   useEffect(() => {
+    if (!store || !store.selectedStore) return;
+
     const fetchData = async () => {
-      const data = await fetchViewProductsDetailsData(productCategory);
-      if (data !== null) {
-        setProducts(data);
-        // console.log("data: ", data);
+      if (store.selectedStore) {
+        const data = await fetchViewProductsDetailsFromSpecificStoreData(
+          store.selectedStore.store_id,
+          productCategory
+        );
+        if (data !== null) {
+          setProducts(data);
+        }
       }
       setIsLoading(false);
     };
 
     fetchData();
-  }, [productCategory]);
+  }, [store, productCategory]);
 
   const convertedCategory = convertUrlFriendlyCategory(productCategory);
 

@@ -14,6 +14,7 @@ import {
 } from "@/utils/redux/features/products/cartReducer";
 import { getUser } from "@/utils/functions/userFetch";
 import { signOutCustomer } from "@/utils/functions/signOut";
+import { removeSelectedStore } from "@/utils/redux/features/store/storeReducer";
 
 const HeaderComponent = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -37,6 +38,7 @@ const HeaderComponent = () => {
   }, []);
 
   const products = useSelector((state: RootState) => state.cart.items);
+  const store = useSelector((state: RootState) => state.store);
 
   // redux
   const dispatch = useAppDispatch();
@@ -71,17 +73,26 @@ const HeaderComponent = () => {
   return (
     <header className="w-full bg-main-theme text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <Link href="\home" className="flex items-center text-2xl font-bold">
-          <Image
-            src="/images/sn-mart-logo.svg"
-            alt="SN Mart Logo"
-            width={45}
-            height={45}
-            className="rounded-full"
-          />
-          <span className="ml-2">SN Mart</span>
-        </Link>
-        <div className="flex-grow mx-4 lg:mx-64 hidden md:block">
+        <div className="flex justify-center items-center gap-5">
+          <Link href="\home" className="flex items-center text-2xl font-bold">
+            <Image
+              src="/images/sn-mart-logo.svg"
+              alt="SN Mart Logo"
+              width={45}
+              height={45}
+              className="rounded-full"
+            />
+            <span className="ml-2">SN Mart</span>
+          </Link>
+          {store.selectedStore?.store_name && (
+            <button
+              className="text-sm text-white"
+              onClick={() => dispatch(removeSelectedStore())}>
+              {store.selectedStore?.store_name}
+            </button>
+          )}
+        </div>
+        <div className="flex-grow mx-4 lg:mr-64 lg:ml-44 hidden md:block">
           <input
             type="search"
             placeholder="Search..."
@@ -122,13 +133,30 @@ const HeaderComponent = () => {
                 <h6 className="hidden md:block">Cart</h6>
               </button>
             </li>
+            {/* <li>
+              {user ? (
+                <button
+                  onClick={handleCartClick}
+                  className="flex gap-1 items-center hover:text-hover-gray-theme">
+                  <MdOutlineShoppingCart className="text-xl" />
+                  <h6 className="hidden md:block">Cart</h6>
+                </button>
+              ) : (
+                <Link href="/signin" className="hover:text-hover-gray-theme">
+                  <div className="flex gap-1 items-center">
+                    <MdOutlineShoppingCart className="text-xl" />
+                    <h6 className="hidden md:block">Cart</h6>
+                  </div>
+                </Link>
+              )}
+            </li> */}
           </ul>
         </nav>
       </div>
       {isCartOpen && (
         <div
           ref={cartRef}
-          className="fixed right-0 top-0 h-full w-96 z-10 bg-white shadow-lg transition-all duration-300 flex flex-col">
+          className="fixed right-0 top-0 h-full w-96 z-50 bg-white shadow-lg transition-all duration-300 flex flex-col">
           <div className="p-5">
             <div className="flex justify-between items-center ">
               <h2 className="text-lg font-bold text-main-theme">Cart</h2>

@@ -1,3 +1,5 @@
+// cartReducer.tsx
+
 "use client";
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
@@ -49,7 +51,6 @@ const cartSlice = createSlice({
       const productId = action.payload;
       delete state.items[productId];
     },
-    // Add more actions as needed, e.g., removeFromCart, clearCart
   },
 });
 
