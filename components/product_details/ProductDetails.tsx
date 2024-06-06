@@ -9,6 +9,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/react";
+import { AddToCartButtonAlt } from "../AddToCartButton";
+import { useSelector } from "react-redux";
+import { RootState } from "@/utils/redux/store";
+import { fetchViewProductsDetailsFromSpecificStoreData2 } from "@/app/api/inventoryData";
 
 type Props = {
   productId: string;
@@ -19,11 +23,21 @@ const ProductDetails = ({ productId, productCategory }: Props) => {
   const [product, setProduct] = useState<Product>();
   const [isLoading, setIsLoading] = useState(true);
 
+  const store = useSelector((state: RootState) => state.store);
+
   useEffect(() => {
+    if (!store || !store.selectedStore) return;
+
     const fetchData = async () => {
-      const data = await fetchSpecificProductDetailsData(parseInt(productId));
-      if (data !== null) {
-        setProduct(data[0]);
+      if (store.selectedStore) {
+        const data = await fetchViewProductsDetailsFromSpecificStoreData2(
+          store.selectedStore.store_id,
+          productCategory,
+          parseInt(productId)
+        );
+        if (data !== null) {
+          setProduct(data[0]);
+        }
       }
       setIsLoading(false);
     };
@@ -72,16 +86,12 @@ const ProductDetails = ({ productId, productCategory }: Props) => {
               <h3 className="text-xl">{product?.brand_name}</h3>
               <p>${product?.price}</p>
 
-              <button
-                onClick={() => {
-                  if (product) {
-                    dispatch(addToCart(product));
-                  }
-                }}
-                className="mt-10 mb-12 rounded-full bg-main-theme px-14 py-4 text-white hover:bg-main-hover-theme flex items-center gap-2">
-                <MdOutlineShoppingCart />
-                <p>Add to cart product</p>
-              </button>
+              <div className="mt-10 mb-12">
+                <AddToCartButtonAlt
+                  product={product}
+                  isDisabled={product?.quantity === 0}
+                />
+              </div>
 
               <h4 className="text-xl mb-3">Description</h4>
               <p>

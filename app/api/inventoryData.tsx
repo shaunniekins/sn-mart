@@ -66,6 +66,31 @@ export const fetchViewProductsDetailsFromSpecificStoreData = async (
   }
 };
 
+export const fetchViewProductsDetailsFromSpecificStoreData2 = async (
+  store_id: number,
+  categoryName: string,
+  product_id: number
+) => {
+  const convertedCategoryName = convertUrlFriendlyCategory(categoryName);
+  try {
+    const { data, error } = await supabase
+      .from("ViewInventoryDetails")
+      .select()
+      .eq("store_id", store_id)
+      .eq("product_type_name", convertedCategoryName)
+      .eq("product_id", product_id);
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return null;
+  }
+};
+
 // Filtering array of product IDs (for checked products)
 // export const fetchCheckedProductInStoreInventoryData = async (
 //   store_id: number,
@@ -177,6 +202,28 @@ export const insertStoreInventoryData = async (newInventory: {
   } catch (error) {
     console.error("Error inserting inventory:", error);
     throw error;
+  }
+};
+
+export const fetchSpecificProductInStoreInventoryData = async (
+  store_id: number,
+  product_id: number
+) => {
+  try {
+    const { data, error } = await supabase
+      .from("ViewInventoryDetails")
+      .select()
+      .eq("store_id", store_id)
+      .eq("product_id", product_id);
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return null;
   }
 };
 

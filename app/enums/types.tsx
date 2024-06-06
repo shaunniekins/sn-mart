@@ -1,4 +1,5 @@
 type Product = {
+  store_id: number;
   product_id: number;
   product_name: string;
   upc_code: string;
@@ -8,6 +9,7 @@ type Product = {
   product_type_id: number;
   product_type_name: string;
   price: number;
+  quantity: number;
 };
 
 type Store = {

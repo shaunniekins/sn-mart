@@ -12,6 +12,7 @@ import { BreadcrumbItem, Breadcrumbs } from "@nextui-org/react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/utils/redux/store";
 import { fetchViewProductsDetailsFromSpecificStoreData } from "@/app/api/inventoryData";
+import AddToCartButton from "../AddToCartButton";
 
 type Props = {
   productCategory: string;
@@ -84,13 +85,7 @@ const ProductGrid = ({ productCategory }: Props) => {
                 <div className="flex justify-between items-center mt-2">
                   <p className="text-gray-600">${product.price}</p>
 
-                  <button
-                    onClick={() => {
-                      dispatch(addToCart(product));
-                    }}
-                    className="rounded-lg bg-main-theme px-3 py-2 text-white hover:bg-main-hover-theme">
-                    <MdOutlineShoppingCart />
-                  </button>
+                  <AddToCartButton product={product} />
                 </div>
               </div>
             ))}

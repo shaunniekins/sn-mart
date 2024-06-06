@@ -38,18 +38,6 @@ import { fetchProductTypesData } from "@/app/api/productTypesData";
 import { EyeFilledIcon } from "@/components/icons/EyeFilledIcon";
 import { SearchIcon } from "@/components/icons/SearchIcon";
 
-type Product = {
-  product_id: number;
-  product_name: string;
-  upc_code: string;
-  size: string;
-  price: number;
-  brand_id: number | null;
-  brand_name: string;
-  product_type_id: number | null;
-  product_type_name: string;
-};
-
 type Brand = {
   brand_id: number;
   brand_name: string;
@@ -86,6 +74,7 @@ const ManageProductCatalog = () => {
         setLoadingState("error");
       } else {
         setProducts(response.data as Product[]);
+        console.log("response", response.data);
         setNumOfEntries(response.count || 1);
         setLoadingState("idle");
       }

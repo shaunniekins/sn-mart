@@ -4,7 +4,6 @@ import Link from "next/link";
 
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { MdOutlineShoppingCart } from "react-icons/md";
 import React, { useEffect, useRef, useState } from "react";
 
 import { categories } from "@/utils/data/categories";
@@ -22,12 +21,17 @@ import { useAppDispatch } from "@/utils/redux/hooks";
 import { useSelector } from "react-redux";
 import { RootState } from "@/utils/redux/store";
 import { fetchViewProductsDetailsFromSpecificStoreData } from "@/app/api/inventoryData";
+import AddToCartButton from "../AddToCartButton";
 
 const ProductCategories = () => {
   const [products, setProducts] = useState<{ [key: string]: Product[] }>({});
   const [isLoading, setIsLoading] = useState(true);
 
   const store = useSelector((state: RootState) => state.store);
+
+  // useEffect(() => {
+  //   console.log("products", products);
+  // }, [products]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,9 +60,6 @@ const ProductCategories = () => {
 
     fetchData();
   }, [store, categories]);
-
-  // redux
-  const dispatch = useAppDispatch();
 
   return (
     <section className="py-10 px-4 z-0">
@@ -142,16 +143,20 @@ const ProductCategories = () => {
                             </h4>
                           </Link>
                           <div className="flex justify-between items-center mt-2">
-                            <p className="text-gray-600">$ {product.price}</p>
-
-                            <button
-                              onClick={() => {
-                                dispatch(addToCart(product));
-                                console.log("product: ", product);
-                              }}
-                              className="rounded-lg bg-main-theme px-3 py-2 text-white hover:bg-main-hover-theme">
-                              <MdOutlineShoppingCart />
-                            </button>
+                            <p
+                              className={`${
+                                product.quantity === 0
+                                  ? "text-red-600"
+                                  : "text-gray-600"
+                              }`}>
+                              {product.quantity === 0
+                                ? "Out of Stock"
+                                : `$ ${product.price}`}
+                            </p>
+                            <AddToCartButton
+                              product={product}
+                              isDisabled={product.quantity === 0}
+                            />
                           </div>
                         </div>
                       ))}
