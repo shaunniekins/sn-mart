@@ -201,31 +201,31 @@ const HeaderComponent = () => {
                   </Link>
                 )}
               </li>
-              <li>
-                <button
-                  onClick={handleCartClick}
-                  className="flex gap-1 items-center hover:text-hover-gray-theme">
-                  <MdOutlineShoppingCart className="text-xl" />
-                  <h6 className="hidden md:block">Cart</h6>
-                </button>
-              </li>
               {/* <li>
-              {user ? (
                 <button
                   onClick={handleCartClick}
                   className="flex gap-1 items-center hover:text-hover-gray-theme">
                   <MdOutlineShoppingCart className="text-xl" />
                   <h6 className="hidden md:block">Cart</h6>
                 </button>
-              ) : (
-                <Link href="/signin" className="hover:text-hover-gray-theme">
-                  <div className="flex gap-1 items-center">
+              </li> */}
+              <li>
+                {user ? (
+                  <button
+                    onClick={handleCartClick}
+                    className="flex gap-1 items-center hover:text-hover-gray-theme">
                     <MdOutlineShoppingCart className="text-xl" />
                     <h6 className="hidden md:block">Cart</h6>
-                  </div>
-                </Link>
-              )}
-            </li> */}
+                  </button>
+                ) : (
+                  <Link href="/signin" className="hover:text-hover-gray-theme">
+                    <div className="flex gap-1 items-center">
+                      <MdOutlineShoppingCart className="text-xl" />
+                      <h6 className="hidden md:block">Cart</h6>
+                    </div>
+                  </Link>
+                )}
+              </li>
             </ul>
           </nav>
         </div>
