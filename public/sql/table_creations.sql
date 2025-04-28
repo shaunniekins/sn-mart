@@ -30,10 +30,19 @@ CREATE TABLE "Vendors" (
     CONSTRAINT Vendors_vendor_manager_id_fkey FOREIGN KEY (vendor_manager_id) REFERENCES auth.users (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- Profiles Table (Linked to auth.users)
+CREATE TABLE "Profiles" (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    first_name TEXT,
+    last_name TEXT,
+    role TEXT
+);
+
 -- Product Types Table
 CREATE TABLE "Product_Types" (
     product_type_id SERIAL PRIMARY KEY,
-    product_type_name VARCHAR(255) NOT NULL parent_type_id INTEGER NULL,
+    product_type_name VARCHAR(255) NOT NULL,
+    parent_type_id INTEGER NULL,
     CONSTRAINT Product_Types_parent_type_id_fkey FOREIGN KEY (parent_type_id) REFERENCES "Product_Types" (product_type_id)
 );
 
