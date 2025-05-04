@@ -16,37 +16,48 @@ NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
 * `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase project anonymous key.
 * `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY`: Your Supabase project service role key (used for admin operations).
 
-## 2. Database Setup
+## 2. Authentication System
+
+SN Mart implements a role-based authentication system with the following user roles:
+
+* **Admin**: Has access to all management interfaces and can create other users
+* **Store Manager**: Can manage store inventory and handle store operations
+* **Vendor Manager**: Can manage vendor information and handle restock requests
+* **Customer**: Can browse products and make purchases
+
+Each user type has specific permissions and is redirected to the appropriate interface after login.
+
+## 3. Database Setup
 
 Connect to your Supabase database using a SQL client (like the Supabase SQL Editor) and run the following scripts in the specified order:
 
-1. **Table Creation:** Execute the script to create the necessary database tables.
-    * File: `public/sql/table_creations.sql`
-2. **View Creation:** Execute the scripts to create database views for easier data querying.
-    * File: `public/sql/views/ViewProductDetails.sql`
-    * File: `public/sql/views/ViewInventoryDetails.sql`
-    * File: `public/sql/views/ViewStoreDetails.sql`
-    * File: `public/sql/views/ViewVendorDetails.sql`
-    * *(Add other view scripts if any)*
-3. **Profile Creation Trigger:** Execute the script to set up the trigger that automatically creates a profile entry when a new user signs up via Supabase Auth.
-    * File: `public/sql/ProfileCreation.sql`
-4. **Stock Requests Table:** Execute the script to create the table for managing stock requests.
-    * File: `public/sql/Stock_Requests.sql`
+1. **Create Database Tables**: Run `public/sql/2_table_creations.sql`
+   * Creates tables for Brands, Stores, Customers, Vendors, Profiles, Product Types, Products, Product Vendors, Inventory, Sales, Sale Items, and Stock Requests
+   * After executing this script, enable realtime functionality for the tables:
+     1. Navigate to the Supabase Dashboard
+     2. Go to "Table Editor"
+     3. For each table that requires realtime updates (especially Inventory, Products, Sales, and Stock Requests), click on the table
+     4. Go to upper tab
+     5. Enable "Realtime" by toggling the switch to ON
+     6. Save changes
 
-## 3. Initial Data Setup
+2. **Create Database Views**: Run `public/sql/3_view_creations.sql`
+   * Creates views for Inventory Details, Product Details, Stock Requests, Store Details, Users, Roles, and Vendor Details
+
+## 4. Initial Data Setup
 
 Populate the database with initial data by running the following SQL scripts:
 
-1. **Brands:** Insert initial brand data.
-    * File: `public/sql/initial_data_input/insert_data_brands.sql`
-2. **Product Types:** Insert initial product category data.
-    * File: `public/sql/initial_data_input/insert_data_product_types.sql`
-3. **Vendors:** Insert initial vendor data.
-    * File: `public/sql/initial_data_input/insert_data_vendors.sql`
-4. **Products:** Insert initial product data. This script depends on Brands and Product Types being inserted first.
-    * File: `public/sql/initial_data_input/insert_data_products.sql`
+1. **Product Types Data**: Run `public/sql/seed/1_insert_data_product_types.sql`
+   * Inserts top-level product categories like Electronics, Clothing, Home & Kitchen, etc.
 
-## 4. Admin User Setup
+2. **Brands Data**: Run `public/sql/seed/2_insert_data_brands.sql`
+   * Inserts brand information for different product categories (50 brands total)
+
+3. **Products Data**: Run `public/sql/seed/3_insert_data_products.sql`
+   * Inserts sample products across all categories with details like UPC code, price, and size
+
+## 5. Admin User Setup
 
 The primary administrator user needs to be created manually for security reasons.
 
@@ -56,9 +67,23 @@ The primary administrator user needs to be created manually for security reasons
     * Enter the admin email (e.g., `admin@gmail.com`) and a secure password.
     * **Important:** Ensure "Auto Confirm user" is **enabled** in your Supabase Authentication settings, or manually confirm the user.
 2. **Update Admin Metadata:** Run the following SQL script to assign the 'admin' role and basic profile information to the newly created admin user. Replace `'admin@gmail.com'` if you used a different email.
-    * File: `public/sql/AdminUpdateSetup.sql`
+    * File: `public/sql/1_admin_update_setup.sql`
 
-## 5. Running the Application
+## 6. User Management
+
+Administrators can create and manage users through the admin interface:
+
+1. Navigate to `/authuser/admin/management/users`
+2. Use the interface to add, edit or delete users
+3. Assign appropriate roles to new users (store-manager, vendor-manager)
+
+Users with customer roles can register directly through the customer signup page (`/signup`).
+
+## 7. Session Management
+
+The application uses Supabase Auth for session management. Sessions are maintained across page reloads through cookies. The middleware ensures authentication state is consistently checked across the application.
+
+## 8. Running the Application
 
 1. **Install Dependencies:**
 
@@ -74,25 +99,13 @@ The primary administrator user needs to be created manually for security reasons
 
     The application should now be running, typically at `http://localhost:3000`.
 
-## 6. Application Usage & Management
+## 9. Application Structure
 
-* **Admin Role (`admin@gmail.com` or your chosen admin email):**
-  * Access the admin dashboard via `/authuser/admin/dashboard` (after signing in through `/authuser/signin`).
-  * **Manage Users:** Create, edit, and delete users (Store Managers, Vendor Managers). View customer accounts. Filter users by role. (`components/admin/components/ManageUsers.tsx`)
-  * **Manage Brands:** Add, edit, and delete product brands. (`components/admin/components/ManageBrands.tsx`)
-  * **Manage Product Categories:** Add, edit, and delete product types/categories. (`components/admin/components/ManageProductCategories.tsx`)
-  * **Manage Product Catalog:** Add, edit, and delete products, assigning brands and categories. (`components/admin/components/ManageProductCatalog.tsx`)
-  * **View Stores:** View a list of all stores, their locations, hours, and assigned managers. (`components/admin/components/ManageStores.tsx`)
-* **Store Manager Role:**
-  * Sign in via `/authuser/signin`.
-  * Access the store dashboard via `/authuser/store/dashboard`.
-  * **Manage Store Details:** Add or edit their assigned store's name, location, and operating hours. (`components/store/StoreDashboardComponent.tsx`)
-  * **Manage Inventory:** Add/remove products available in their store, view current stock levels, and request restocking from vendors. (`components/store/components/StoreInventory.tsx`)
-* **Vendor Manager Role:**
-  * Sign in via `/authuser/signin`.
-  * Access the vendor dashboard via `/authuser/supplier/dashboard`.
-  * *(Functionality for managing vendor details and processing stock requests is implied by API routes like `app/api/vendorsData.tsx` and `app/api/stockRequestData.tsx`, but specific UI components are not fully shown in the provided context).*
-* **Customer Role:**
-  * Sign up via `/signup`.
-  * Sign in via `/signin`.
-  * Browse products, view categories, add items to the cart, and checkout. (`components/landing_page/*`, `/home`)
+The application is structured with the following key areas:
+
+* **/home**: Customer-facing storefront
+* **/signin, /signup**: Customer authentication
+* **/authuser/signin**: Admin/Staff authentication
+* **/authuser/admin/dashboard**: Admin dashboard
+* **/authuser/store/dashboard**: Store manager dashboard
+* **/authuser/supplier/dashboard**: Vendor manager dashboard

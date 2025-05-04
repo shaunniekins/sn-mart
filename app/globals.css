@@ -111,3 +111,28 @@ input::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* Toast Styling */
+.Toastify__toast-container {
+  z-index: 9999 !important;
+}
+
+.Toastify__toast {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.Toastify__toast-body {
+  font-family: inherit !important;
+  font-weight: 500 !important;
+}
+
+.Toastify__toast--success {
+  background-color: #f5f0ff !important; /* Light purple background */
+  color: #6b21a8 !important; /* Purple text matching NextUI secondary */
+  border-left: 4px solid #9333ea !important; /* Darker purple border */
+}
+
+.Toastify__progress-bar--success {
+  background-color: #9333ea !important; /* Progress bar color */
+}

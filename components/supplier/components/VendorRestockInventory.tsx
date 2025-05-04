@@ -155,7 +155,8 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
         onOpenChange={onOpen}
         onClose={onClose}
         isDismissable={false}
-        size="xs">
+        size="xs"
+      >
         <ModalContent>
           <ModalHeader className="text-xl font-bold text-main-theme">
             Action to Restock
@@ -165,7 +166,8 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
               <div className="form-container">
                 <Button
                   color="secondary"
-                  onPress={handleAddOrEditRestockConfirmation}>
+                  onPress={handleAddOrEditRestockConfirmation}
+                >
                   Deliver Requested Quantity
                 </Button>
               </div>
@@ -180,12 +182,13 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
       </Modal>
       <div className="flex flex-col gap-5">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-bold mb-2">Store Inventory</h3>
+          <h3 className="text-lg font-bold mb-2">Restock Requests</h3>
           <div className="flex items-center gap-2">
             <Button
               radius="md"
               className="bg-main-theme hover:bg-main-hover-theme text-white"
-              onPress={onOpen}>
+              onPress={onOpen}
+            >
               Manage
             </Button>
             <Input
@@ -229,7 +232,8 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
               defaultSelectedKeys={["Pending"]}
               onChange={(e) => {
                 setOtherFilter(e.target.value);
-              }}>
+              }}
+            >
               <SelectItem key={"Pending"} value="Pending">
                 Pending
               </SelectItem>
@@ -260,12 +264,14 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
                 />
               </div>
             ) : null
-          }>
+          }
+        >
           <TableHeader columns={columns}>
             {(column) => (
               <TableColumn
                 key={column.key}
-                className="bg-main-theme text-white text-center">
+                className="bg-main-theme text-white text-center"
+              >
                 {column.label}
               </TableColumn>
             )}
@@ -274,7 +280,8 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
             items={vendorInventory}
             emptyContent={"No rows to display."}
             loadingContent={<Spinner color="secondary" />}
-            loadingState={loadingState}>
+            loadingState={loadingState}
+          >
             {(venInv) => (
               <TableRow key={venInv.request_id} className="text-center">
                 {(columnKey) => {
@@ -301,7 +308,8 @@ const VendorRestockInventory: React.FC<VendorRestockInventoryProp> = ({
                             if (venInv.status === "Pending") {
                               onOpen();
                             }
-                          }}>
+                          }}
+                        >
                           {venInv.status}
                         </Button>
                       </TableCell>

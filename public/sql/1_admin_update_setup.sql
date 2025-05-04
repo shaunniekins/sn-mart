@@ -1,3 +1,5 @@
+-- Description: First you need to create a user with the email 'admin@gmail.com' in supabase authentication. Then run this script to update the user with the role of admin and set the first and last name.
+
 SELECT
     *
 FROM

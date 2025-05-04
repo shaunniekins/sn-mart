@@ -7,42 +7,48 @@ const AdminDashboardComponent = () => {
       <div className="grid md:grid-cols-2 gap-4">
         <Link
           href="/authuser/admin/management/product"
-          className="link-management-buttons">
+          className="link-management-buttons"
+        >
           Manage Product Catalog
         </Link>
         <Link
           href="/authuser/admin/management/category"
-          className="link-management-buttons">
+          className="link-management-buttons"
+        >
           Manage Product Categories
         </Link>
         <Link
           href="/authuser/admin/management/brand"
-          className="link-management-buttons">
+          className="link-management-buttons"
+        >
           Manage Brands
         </Link>
-        <Link
+        {/* <Link
           href="/authuser/admin/management/management"
           className="link-management-buttons">
           View and Manage Orders
-        </Link>
+        </Link> */}
         <Link
           href="/authuser/admin/management/store"
-          className="link-management-buttons">
+          className="link-management-buttons"
+        >
           View Stores
         </Link>
-        <Link
+        {/* <Link
           href="/authuser/admin/management/vendor"
           className="link-management-buttons">
           Manage Vendors/Suppliers
-        </Link>
-        <Link
+        </Link> */}
+        {/* <Link
           href="/authuser/admin/management/sales"
-          className="link-management-buttons">
+          className="link-management-buttons"
+        >
           View Sales Reports
-        </Link>
+        </Link> */}
         <Link
           href="/authuser/admin/management/users"
-          className="link-management-buttons">
+          className="link-management-buttons"
+        >
           Manage User Accounts
         </Link>
       </div>
