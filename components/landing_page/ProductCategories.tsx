@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-import { categories } from "@/utils/data/categories";
 import { fetchViewProductsDetailsData } from "@/app/api/productsData";
 import {
   responsiveCategories,
@@ -22,44 +22,72 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/utils/redux/store";
 import { fetchViewProductsDetailsFromSpecificStoreData } from "@/app/api/inventoryData";
 import AddToCartButton from "../AddToCartButton";
+import { fetchProductTypesData } from "@/app/api/productTypesData";
+import { convertUrlFriendlyCategory } from "@/utils/component_functions/conversion";
+
+// Local URL friendly conversion function as a fallback
+const makeUrlFriendly = (text: string): string => {
+  if (!text) return "";
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+};
+
+type ProductType = {
+  product_type_id: number;
+  product_type_name: string;
+  image_url?: string | null;
+};
 
 const ProductCategories = () => {
   const [products, setProducts] = useState<{ [key: string]: Product[] }>({});
+  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const store = useSelector((state: RootState) => state.store);
 
-  // useEffect(() => {
-  //   console.log("products", products);
-  // }, [products]);
-
   useEffect(() => {
     const fetchData = async () => {
-      const productsByCategory: { [key: string]: Product[] } = {};
+      setIsLoading(true);
 
-      for (const category of categories.slice(0, 4)) {
-        if (!store || !store.selectedStore) {
-          const data = await fetchViewProductsDetailsData(category.name);
-          if (data !== null) {
-            productsByCategory[category.name] = data;
+      const typesData = await fetchProductTypesData();
+      if (typesData) {
+        setProductTypes(typesData as ProductType[]);
+
+        const productsByCategory: { [key: string]: Product[] } = {};
+        for (const category of typesData as ProductType[]) {
+          const categoryName = category.product_type_name;
+          let productData: Product[] | null = null;
+
+          if (!store || !store.selectedStore) {
+            console.warn(
+              "No store selected, product fetching might be limited."
+            );
+          } else {
+            productData = await fetchViewProductsDetailsFromSpecificStoreData(
+              store.selectedStore.store_id,
+              categoryName
+            );
           }
-        } else {
-          const data = await fetchViewProductsDetailsFromSpecificStoreData(
-            store.selectedStore.store_id,
-            category.name
-          );
-          if (data !== null) {
-            productsByCategory[category.name] = data;
+
+          if (productData !== null) {
+            productsByCategory[categoryName] = productData;
+          } else {
+            productsByCategory[categoryName] = [];
           }
         }
+        setProducts(productsByCategory);
+      } else {
+        console.error("Failed to fetch product types.");
       }
 
-      setProducts(productsByCategory);
       setIsLoading(false);
     };
 
     fetchData();
-  }, [store, categories]);
+  }, [store]);
 
   return (
     <section className="py-10 px-4 z-0">
@@ -72,72 +100,101 @@ const ProductCategories = () => {
           <h2 className="text-2xl font-bold text-main-theme mb-6">
             Browse by Category
           </h2>
-          <Carousel
-            responsive={responsiveCategories}
-            autoPlay={true}
-            swipeable={true}
-            draggable={true}
-            showDots={true}
-            infinite={true}
-            partialVisible={false}
-            className="z-0">
-            {categories.map((category) => (
-              <Link href={category.link} key={category.name}>
-                <div
-                  key={category.name}
-                  className="bg-white rounded-lg shadow-md overflow-hidden slider">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-main-theme">
-                      {category.name}
-                    </h3>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </Carousel>
+          {productTypes.length > 0 ? (
+            <Carousel
+              responsive={responsiveCategories}
+              autoPlay={true}
+              swipeable={true}
+              draggable={true}
+              showDots={true}
+              infinite={true}
+              partialVisible={false}
+              className="z-0"
+            >
+              {productTypes.map((category) => {
+                const categoryRoute = makeUrlFriendly(
+                  category.product_type_name
+                );
+                return (
+                  <Link
+                    href={`/products/${categoryRoute}`}
+                    key={category.product_type_id}
+                  >
+                    <div
+                      key={category.product_type_id}
+                      className="bg-white rounded-lg shadow-md overflow-hidden slider"
+                    >
+                      <img
+                        src={category.image_url || "/images/sn-mart-logo.jpeg"}
+                        alt={category.product_type_name}
+                        className="w-full h-48 object-cover"
+                      />
+                      <div className="p-4">
+                        <h3 className="text-lg font-semibold text-main-theme">
+                          {category.product_type_name}
+                        </h3>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </Carousel>
+          ) : (
+            <p className="text-gray-500">No categories found.</p>
+          )}
 
           <div className="mt-4 flex flex-col">
-            {categories.slice(0, 4).map((category) => (
-              <React.Fragment key={category.name}>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-main-theme ">
-                    {category.name}
-                  </h2>
+            {productTypes
+              .filter((category) => {
+                const categoryProducts =
+                  products[category.product_type_name] || [];
+                return categoryProducts.length > 0;
+              })
+              .map((category) => {
+                const categoryRoute = makeUrlFriendly(
+                  category.product_type_name
+                );
+                const categoryProducts =
+                  products[category.product_type_name] || [];
 
-                  <Link href={category.link} key={category.name}>
-                    <h3 className="text-sm text-gray-800 ">See More</h3>
-                  </Link>
-                </div>
-                {products[category.name] &&
-                products[category.name].length > 0 ? (
-                  <Carousel
-                    responsive={responsiveProducts}
-                    autoPlay={false}
-                    swipeable={true}
-                    draggable={true}
-                    showDots={false}
-                    infinite={true}
-                    partialVisible={false}
-                    className="z-0">
-                    {products[category.name] &&
-                      products[category.name].length > 0 &&
-                      products[category.name].map((product) => (
+                return (
+                  <React.Fragment key={category.product_type_id}>
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-main-theme ">
+                        {category.product_type_name}
+                      </h2>
+                      <Link href={`/products/${categoryRoute}`}>
+                        <h3 className="text-sm text-gray-800 ">See More</h3>
+                      </Link>
+                    </div>
+                    <Carousel
+                      responsive={responsiveProducts}
+                      autoPlay={false}
+                      swipeable={true}
+                      draggable={true}
+                      showDots={false}
+                      infinite={categoryProducts.length > 5}
+                      partialVisible={false}
+                      className="z-0"
+                    >
+                      {categoryProducts.map((product) => (
                         <div
-                          key={product.product_name}
-                          className="sliderProducts bg-white rounded-lg shadow-md p-4">
-                          <img
-                            src={"/images/sn-mart-logo.jpeg"}
+                          key={product.product_id}
+                          className="sliderProducts bg-white rounded-lg shadow-md p-4"
+                        >
+                          <Image
+                            src={
+                              product.image_url || "/images/sn-mart-logo.jpeg"
+                            }
                             alt={product.product_name}
-                            className="w-full h-40 object-cover mb-2"
+                            width={200}
+                            height={160}
+                            className="w-full h-40 object-cover mb-2 rounded-md"
                           />
                           <Link
-                            href={`/products/${category.route}/${product.product_id}`}
-                            className="text-main-theme">
+                            href={`/products/${categoryRoute}/${product.product_id}`}
+                            className="text-main-theme"
+                          >
                             <h4 className="text-lg font-medium whitespace-nowrap overflow-ellipsis overflow-hidden text-main-theme">
                               {product.product_name}
                             </h4>
@@ -148,10 +205,11 @@ const ProductCategories = () => {
                                 product.quantity === 0
                                   ? "text-red-600"
                                   : "text-gray-600"
-                              }`}>
+                              }`}
+                            >
                               {product.quantity === 0
                                 ? "Out of Stock"
-                                : `$ ${product.price}`}
+                                : `$${product.price}`}
                             </p>
                             <AddToCartButton
                               product={product}
@@ -160,14 +218,10 @@ const ProductCategories = () => {
                           </div>
                         </div>
                       ))}
-                  </Carousel>
-                ) : (
-                  <div className="-mt-4 mb-4  text-gray-400">
-                    No products found for this category.
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
+                    </Carousel>
+                  </React.Fragment>
+                );
+              })}
           </div>
         </div>
       )}

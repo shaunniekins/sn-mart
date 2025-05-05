@@ -6,7 +6,7 @@ export const fetchProductTypesData = async () => {
   try {
     const { data, error } = await supabase
       .from("Product_Types")
-      .select()
+      .select(`*`) // Select all columns including image_url
       .order("product_type_name");
 
     if (error) {
@@ -34,7 +34,7 @@ export const fetchAllProductTypesData = async (
 
   let query = supabase
     .from("Product_Types")
-    .select(`*`, { count: "exact" })
+    .select(`*`, { count: "exact" }) // Select all columns including image_url
     .order("product_type_name");
 
   if (searchValue) {
@@ -76,11 +76,14 @@ export const deleteProductTypeData = async (productTypeId: number) => {
   }
 };
 
-export const insertProductTypeData = async (productTypeName: string) => {
+export const insertProductTypeData = async (
+  productTypeName: string,
+  imageUrl?: string | null
+) => {
   try {
     const response = await supabase
       .from("Product_Types")
-      .insert([{ product_type_name: productTypeName }]);
+      .insert([{ product_type_name: productTypeName, image_url: imageUrl }]); // Add image_url
 
     if (response.error) {
       throw response.error;
@@ -95,12 +98,13 @@ export const insertProductTypeData = async (productTypeName: string) => {
 
 export const editProductTypeData = async (
   productTypeId: number,
-  productTypeName: string
+  productTypeName: string,
+  imageUrl?: string | null
 ) => {
   try {
     const response = await supabase
       .from("Product_Types")
-      .update({ product_type_name: productTypeName })
+      .update({ product_type_name: productTypeName, image_url: imageUrl }) // Add image_url
       .match({ product_type_id: productTypeId });
 
     if (response.error) {

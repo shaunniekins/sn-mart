@@ -104,6 +104,7 @@ export const insertProductData = async (newProduct: {
   price: number;
   brand_id: number | null;
   product_type_id: number | null;
+  image_url?: string | null;
 }) => {
   try {
     const response = await supabase.from("Products").insert([newProduct]);
@@ -128,6 +129,7 @@ export const editProductData = async (
     price?: number;
     brand_id?: number | null;
     product_type_id?: number | null;
+    image_url?: string | null;
   }
 ) => {
   try {

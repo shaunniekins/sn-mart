@@ -4,17 +4,30 @@ This document provides instructions on how to set up and run the SN Mart applica
 
 ## 1. Environment Variables Setup
 
-Create a `.env.local` file in the root directory of the project and add the following environment variables. Replace the placeholder values with your actual Supabase credentials.
+Create a `.env.local` file in the root directory of the project and add the following environment variables. Replace the placeholder values with your actual Supabase and S3 credentials.
 
 ```bash
+# Supabase Credentials
 NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
+
+# Supabase S3-Compatible Storage Credentials
+SUPABASE_S3_REGION=YOUR_S3_REGION
+SUPABASE_S3_ENDPOINT=YOUR_S3_ENDPOINT
+SUPABASE_S3_ACCESS_KEY=YOUR_S3_ACCESS_KEY
+SUPABASE_S3_SECRET_KEY=YOUR_S3_SECRET_KEY
+SUPABASE_S3_BUCKET=YOUR_S3_BUCKET_NAME
 ```
 
 * `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL.
 * `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase project anonymous key.
 * `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY`: Your Supabase project service role key (used for admin operations).
+* `SUPABASE_S3_REGION`: The AWS region for your Supabase S3-compatible storage (e.g., `ap-southeast-1`).
+* `SUPABASE_S3_ENDPOINT`: The S3 endpoint URL provided by Supabase (e.g., `https://<project-ref>.supabase.co/storage/v1/s3`).
+* `SUPABASE_S3_ACCESS_KEY`: Your S3 access key ID. **Note:** This is typically the Supabase project reference ID.
+* `SUPABASE_S3_SECRET_KEY`: Your S3 secret access key. **Note:** This is typically the Supabase service role key.
+* `SUPABASE_S3_BUCKET`: The name of the S3 bucket used for storing product images (e.g., `products`). Ensure this bucket exists in your Supabase storage.
 
 ## 2. Authentication System
 

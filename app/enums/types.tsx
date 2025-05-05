@@ -10,6 +10,7 @@ type Product = {
   product_type_name: string;
   price: number;
   quantity: number;
+  image_url?: string | null;
 };
 
 type Store = {

@@ -72,11 +72,12 @@ const ProductDetails = ({ productId, productCategory }: Props) => {
           <div className="product-details-container">
             <div className="flex justify-center items-center">
               <Image
-                src="/images/sn-mart-logo.svg"
-                width={30}
-                height={30}
-                alt="SN Mart Logo"
-                style={{ width: "60%" }}
+                src={product?.image_url || "/images/sn-mart-logo.svg"}
+                width={400}
+                height={400}
+                alt={product?.product_name || "Product Image"}
+                className="object-contain rounded-lg"
+                style={{ width: "80%", height: "auto" }}
               />
             </div>
             <div>

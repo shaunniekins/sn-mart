@@ -42,6 +42,7 @@ CREATE TABLE "Profiles" (
 CREATE TABLE "Product_Types" (
     product_type_id SERIAL PRIMARY KEY,
     product_type_name VARCHAR(255) NOT NULL,
+    image_url TEXT NULL,
     parent_type_id INTEGER NULL,
     CONSTRAINT Product_Types_parent_type_id_fkey FOREIGN KEY (parent_type_id) REFERENCES "Product_Types" (product_type_id)
 );
@@ -53,6 +54,7 @@ CREATE TABLE "Products" (
     upc_code VARCHAR(12) UNIQUE NOT NULL,
     size VARCHAR(50),
     price DECIMAL(10, 2) NOT NULL,
+    image_url TEXT NULL,
     brand_id INTEGER REFERENCES "Brands"(brand_id),
     product_type_id INTEGER REFERENCES "Product_Types"(product_type_id)
 );

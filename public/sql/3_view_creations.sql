@@ -9,6 +9,7 @@ SELECT
     p.product_name,
     p.upc_code,
     p.size,
+    p.image_url,
     b.brand_name,
     pt.product_type_name,
     p.price,
@@ -31,10 +32,12 @@ SELECT
     p.upc_code,
     p.size,
     p.price,
+    p.image_url,
     b.brand_id,
     b.brand_name,
     pt.product_type_id AS product_type_id,
-    pt.product_type_name AS product_type_name
+    pt.product_type_name AS product_type_name,
+    pt.image_url AS product_type_image_url 
 FROM
     "Products" p
     JOIN "Brands" b ON p.brand_id = b.brand_id

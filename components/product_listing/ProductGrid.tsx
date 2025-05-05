@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/utils/redux/store";
 import { fetchViewProductsDetailsFromSpecificStoreData } from "@/app/api/inventoryData";
 import AddToCartButton from "../AddToCartButton";
+import Image from "next/image";
 
 type Props = {
   productCategory: string;
@@ -69,15 +70,19 @@ const ProductGrid = ({ productCategory }: Props) => {
             {products.map((product) => (
               <div
                 key={product.product_name}
-                className="gridProducts bg-white rounded-lg shadow-md p-4">
-                <img
-                  src={"/images/sn-mart-logo.jpeg"}
+                className="gridProducts bg-white rounded-lg shadow-md p-4"
+              >
+                <Image
+                  src={product.image_url || "/images/sn-mart-logo.jpeg"}
                   alt={product.product_name}
-                  className="w-full h-40 object-cover mb-2"
+                  width={200}
+                  height={160}
+                  className="w-full h-40 object-cover mb-2 rounded-md"
                 />
                 <Link
                   href={`/products/${productCategory}/${product.product_id}`}
-                  className="text-main-theme">
+                  className="text-main-theme"
+                >
                   <h4 className="text-lg font-medium whitespace-nowrap overflow-ellipsis overflow-hidden text-main-theme">
                     {product.product_name}
                   </h4>

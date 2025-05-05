@@ -35,8 +35,34 @@ import {
 import Link from "next/link";
 import { fetchBrandsData } from "@/app/api/brandsData";
 import { fetchProductTypesData } from "@/app/api/productTypesData";
-import { EyeFilledIcon } from "@/components/icons/EyeFilledIcon";
+import Image from "next/image";
 import { SearchIcon } from "@/components/icons/SearchIcon";
+
+// --- Add computeSHA256 function here (outside the component) ---
+async function computeSHA256(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const arrayBuffer = reader.result as ArrayBuffer;
+        const hashBuffer = await window.crypto.subtle.digest(
+          "SHA-256",
+          arrayBuffer
+        );
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        resolve(String(hashHex));
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(file);
+  });
+}
+// --- End computeSHA256 function ---
 
 type Brand = {
   brand_id: number;
@@ -48,8 +74,12 @@ type ProductType = {
   product_type_name: string;
 };
 
+type ExtendedProduct = Product & {
+  image_url?: string | null;
+};
+
 const ManageProductCatalog = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ExtendedProduct[]>([]);
 
   // fetching
   const [searchValue, setSearchValue] = useState("");
@@ -73,7 +103,7 @@ const ManageProductCatalog = () => {
         console.error(response.error);
         setLoadingState("error");
       } else {
-        setProducts(response.data as Product[]);
+        setProducts(response.data as ExtendedProduct[]);
         console.log("response", response.data);
         setNumOfEntries(response.count || 1);
         setLoadingState("idle");
@@ -132,8 +162,85 @@ const ManageProductCatalog = () => {
   const [selectedProductTypeId, setSelectedProductTypeId] = useState<
     number | null
   >();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    setSelectedFile(file || null);
+    setUploadError(null);
+  };
 
   const handleAddOrEditProduct = async () => {
+    setUploading(true);
+    setUploadError(null);
+    let imageUrl: string | null | undefined = editingProduct?.image_url;
+
+    if (selectedFile) {
+      try {
+        const fileType = selectedFile.type;
+        const fileSize = selectedFile.size;
+        const fileName = selectedFile.name;
+
+        console.log("Computing checksum for:", fileName);
+        const checksum = await computeSHA256(selectedFile);
+        console.log("Checksum computed:", checksum);
+
+        console.log("--- Calling API Route /api/upload-image ---");
+        const apiResponse = await fetch("/api/upload-image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contentType: fileType,
+            fileSize: fileSize,
+            checksum: checksum,
+          }),
+        });
+
+        const result = await apiResponse.json();
+        console.log("API Route response:", result);
+
+        if (!apiResponse.ok || !result.success) {
+          throw new Error(
+            result.failure || `API Error: ${apiResponse.statusText}`
+          );
+        }
+
+        const { url, publicUrl } = result.success;
+
+        console.log("Uploading file to S3:", url);
+        const uploadResponse = await fetch(url, {
+          method: "PUT",
+          body: selectedFile,
+          headers: {
+            "Content-Type": fileType,
+          },
+        });
+        console.log("S3 Upload response status:", uploadResponse.status);
+
+        if (!uploadResponse.ok) {
+          let s3Error = `Failed to upload image to S3. Status: ${uploadResponse.status}`;
+          try {
+            const s3ErrorText = await uploadResponse.text();
+            console.error("S3 Upload Error Body:", s3ErrorText);
+            s3Error += ` - ${s3ErrorText.substring(0, 200)}`;
+          } catch (_) {}
+          throw new Error(s3Error);
+        }
+
+        imageUrl = publicUrl;
+        // console.log("Image URL set to:", imageUrl);
+      } catch (error: any) {
+        console.error("Image upload process failed:", error);
+        setUploadError(error.message || "Image upload failed.");
+        setUploading(false);
+        return;
+      }
+    }
+
     const productData = {
       product_name: inputProductName,
       upc_code: inputUpcCode,
@@ -141,36 +248,37 @@ const ManageProductCatalog = () => {
       price: parseFloat(inputPrice),
       brand_id: selectedBrandId || null,
       product_type_id: selectedProductTypeId || null,
+      image_url: imageUrl,
     };
 
     try {
+      console.log("Saving product data:", productData);
       if (editingProduct) {
         await editProductData(editingProduct.product_id, productData);
+        console.log("Product updated successfully.");
       } else {
         await insertProductData(productData);
+        console.log("Product inserted successfully.");
       }
 
       fetchProducts();
-
       handleRemoveInputValues();
       onClose();
     } catch (error) {
-      console.error("An error occurred:", error);
+      console.error("Database operation failed:", error);
+      setUploadError(
+        `Failed to save product data: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    } finally {
+      setUploading(false);
     }
   };
 
-  // edit spedific product
-  const [editingProduct, setEditingProduct] = useState<{
-    product_id: number;
-    product_name: string;
-    upc_code: string;
-    size: string;
-    price: number;
-    brand_id: number | null;
-    brand_name: string;
-    product_type_id: number | null;
-    product_type_name: string;
-  } | null>(null);
+  const [editingProduct, setEditingProduct] = useState<ExtendedProduct | null>(
+    null
+  );
 
   useEffect(() => {
     if (!isOpen) {
@@ -186,9 +294,13 @@ const ManageProductCatalog = () => {
     setSelectedBrandId(null);
     setSelectedProductTypeId(null);
     setEditingProduct(null);
+    setSelectedFile(null);
+    setUploading(false);
+    setUploadError(null);
   };
 
   const columns = [
+    { key: "image", label: "Image" },
     { key: "product_name", label: "Product Name" },
     { key: "upc_code", label: "UPC Code" },
     { key: "size", label: "Size" },
@@ -204,7 +316,9 @@ const ManageProductCatalog = () => {
         isOpen={isOpen}
         onOpenChange={onOpen}
         onClose={onClose}
-        isDismissable={false}>
+        isDismissable={false}
+        size="2xl"
+      >
         <ModalContent>
           <ModalHeader className="text-xl font-bold text-main-theme">
             {editingProduct ? "Edit Product" : "Add New Product"}
@@ -283,11 +397,13 @@ const ManageProductCatalog = () => {
                     if (selectedBrand) {
                       setSelectedBrandId(selectedBrand.brand_id);
                     }
-                  }}>
+                  }}
+                >
                   {brands.map((brand) => (
                     <AutocompleteItem
                       key={brand.brand_id}
-                      value={brand.brand_id.toString()}>
+                      value={brand.brand_id.toString()}
+                    >
                       {brand.brand_name}
                     </AutocompleteItem>
                   ))}
@@ -315,15 +431,60 @@ const ManageProductCatalog = () => {
                         selectedProductType.product_type_id
                       );
                     }
-                  }}>
+                  }}
+                >
                   {productTypes.map((type) => (
                     <AutocompleteItem
                       key={type.product_type_id}
-                      value={type.product_type_id.toString()}>
+                      value={type.product_type_id.toString()}
+                    >
                       {type.product_type_name}
                     </AutocompleteItem>
                   ))}
                 </Autocomplete>
+              </div>
+              <div className="form-container col-span-2">
+                <label htmlFor="product_image" className="form-label">
+                  Product Image
+                </label>
+                <div className="flex items-center gap-4">
+                  <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-md">
+                    Select Image
+                    <input
+                      type="file"
+                      id="product_image"
+                      name="product_image"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                  <span className="text-sm">
+                    {selectedFile ? selectedFile.name : "No file selected"}
+                  </span>
+                </div>
+                {selectedFile && (
+                  <div className="mt-2">
+                    <p className="text-sm text-green-600">
+                      File selected: {selectedFile.name}
+                    </p>
+                  </div>
+                )}
+                {editingProduct?.image_url && !selectedFile && (
+                  <div className="mt-2">
+                    <p className="text-sm font-medium">Current Image:</p>
+                    <Image
+                      src={editingProduct.image_url}
+                      alt={editingProduct.product_name}
+                      width={80}
+                      height={80}
+                      className="object-cover rounded"
+                    />
+                  </div>
+                )}
+                {uploadError && (
+                  <p className="text-sm text-red-500 mt-1">{uploadError}</p>
+                )}
               </div>
             </div>
           </ModalBody>
@@ -339,18 +500,26 @@ const ManageProductCatalog = () => {
                 !inputUpcCode ||
                 !inputPrice ||
                 !selectedBrandId ||
-                !selectedProductTypeId
+                !selectedProductTypeId ||
+                uploading
               }
+              isLoading={uploading}
               className={`bg-main-theme text-white ${
                 !inputProductName ||
                 !inputUpcCode ||
                 !inputPrice ||
                 !selectedBrandId ||
-                !selectedProductTypeId
+                !selectedProductTypeId ||
+                uploading
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-main-hover-theme"
-              }`}>
-              {editingProduct ? "Update Product" : "Add Product"}
+              }`}
+            >
+              {uploading
+                ? "Saving..."
+                : editingProduct
+                ? "Update Product"
+                : "Add Product"}
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -370,7 +539,8 @@ const ManageProductCatalog = () => {
             <Button
               radius="md"
               className="bg-main-theme hover:bg-main-hover-theme text-white"
-              onPress={onOpen}>
+              onPress={onOpen}
+            >
               + Add
             </Button>
             <Input
@@ -386,7 +556,6 @@ const ManageProductCatalog = () => {
                 ],
                 innerWrapper: "bg-transparent",
                 inputWrapper: [
-                  // "shadow-xl",
                   "bg-default-200/50",
                   "dark:bg-default/60",
                   "backdrop-blur-xl",
@@ -427,12 +596,14 @@ const ManageProductCatalog = () => {
                 />
               </div>
             ) : null
-          }>
+          }
+        >
           <TableHeader columns={columns}>
             {(column) => (
               <TableColumn
                 key={column.key}
-                className="bg-main-theme text-white text-center">
+                className="bg-main-theme text-white text-center"
+              >
                 {column.label}
               </TableColumn>
             )}
@@ -441,10 +612,24 @@ const ManageProductCatalog = () => {
             items={products}
             emptyContent={"No rows to display."}
             loadingContent={<Spinner color="secondary" />}
-            loadingState={loadingState}>
+            loadingState={loadingState}
+          >
             {(product) => (
               <TableRow key={product.product_id} className="text-center">
                 {(columnKey) => {
+                  if (columnKey === "image") {
+                    return (
+                      <TableCell>
+                        <Image
+                          src={product.image_url || "/images/sn-mart-logo.jpeg"}
+                          alt={product.product_name}
+                          width={50}
+                          height={50}
+                          className="object-cover rounded mx-auto"
+                        />
+                      </TableCell>
+                    );
+                  }
                   if (columnKey === "actions") {
                     return (
                       <TableCell className="flex gap-2 justify-center">
@@ -461,7 +646,8 @@ const ManageProductCatalog = () => {
                             setEditingProduct(product);
                           }}
                           onPress={onOpen}
-                          className="bg-edit-theme hover:bg-edit-hover-theme text-white">
+                          className="bg-edit-theme hover:bg-edit-hover-theme text-white"
+                        >
                           <MdOutlineEdit />
                         </Button>
                         <Button
@@ -485,7 +671,8 @@ const ManageProductCatalog = () => {
                                 });
                             }
                           }}
-                          className="bg-delete-theme hover:bg-delete-hover-theme text-white">
+                          className="bg-delete-theme hover:bg-delete-hover-theme text-white"
+                        >
                           <MdDeleteOutline />
                         </Button>
                       </TableCell>
